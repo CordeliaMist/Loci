@@ -1,0 +1,9 @@
+[submodule "Submodules/CkCommons"]
+	path = Submodules/CkCommons
+	url = https://github.com/CordeliaMist/CkCommons.git
+[submodule "Submodules/OtterGui"]
+	path = Submodules/OtterGui
+	url = https://github.com/Ottermandias/OtterGui.git
+[submodule "Submodules/LociAPI"]
+	path = Submodules/LociAPI
+	url = https://github.com/CordeliaMist/Loci.Api.git

@@ -1,0 +1,23 @@
+# Ignore Visual Studio Bloat
+.vs/
+
+# Output directories to ignore
+obj/
+bin/
+
+# Not needed got git publishes, or contains excess file size bloat.
+OutputZip/
+
+# Shell scripts containing personal information and passwords
+*.ps1
+*.sh
+
+# Ignore Visual Studio Code
+bash.exe.*
+
+# Ignore GitExtensions Config
+/GitExtensions.settings
+
+# Ignore Rider IDE files
+.idea/
+*.DotSettings.user

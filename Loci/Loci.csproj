@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/14.0.1">
+    <!--Basic Plugin Definitions-->
+    <PropertyGroup>
+	    <Authors>Cordelia, AndrielChaoti</Authors>
+	    <Copyright>Copyright © 2026</Copyright>
+        <Version>0.0.1.0</Version>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <Deterministic>true</Deterministic>
+        <CopyLocalLockfileAssemblies>true</CopyLocalLockfileAssemblies>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <NoWarn>$(NoWarn);IDE1006,CS8618,MSB3270</NoWarn>
+    </PropertyGroup>
+           
+    <ItemGroup>
+	   <!--For PInvoke replacement-->
+	   <Reference Include="TerraFX.Interop.Windows" Private="false" />
+        <!--Submodules-->
+	   <ProjectReference Include="..\Submodules\CkCommons\CkCommons.csproj" />
+	   <ProjectReference Include="..\Submodules\LociAPI\Loci.Api.csproj" />
+	   <ProjectReference Include="..\Submodules\OtterGui\OtterGui.csproj" />
+	    
+        <!--For SignalR server connectivity, helpful for server connectivity processing-->
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+	    
+	   <!--For MemoryPacking of Loci data and transfer (And SMA Data possibly)-->
+	   <PackageReference Include="MemoryPack" Version="1.21.4" />
+	   <PackageReference Include="MemoryPack.Core" Version="1.21.4" />
+	   <PackageReference Include="MemoryPack.Generator" Version="1.21.4" />  
+    </ItemGroup>
+
+	<ItemGroup>
+		<None Include=".Notices\LociReadme.md" />
+	</ItemGroup>
+
+	<ItemGroup>
+        <None Update="Loci.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Api\" />
+	</ItemGroup>
+</Project>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
