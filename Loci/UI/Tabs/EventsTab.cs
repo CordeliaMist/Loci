@@ -76,12 +76,13 @@ public class LociEventsTab : IDisposable
         using var _ = CkRaii.Child("selected", ImGui.GetContentRegionAvail());
         if (!_) return;
         var minPos = ImGui.GetCursorPos();
-        if (_selector.Selected is not { } preset)
-        {
-            CkGui.FontTextCentered("No Event Selected", Fonts.UidFont, ImGuiColors.DalamudGrey);
-            return;
-        }
 
-        CkGui.FontTextCentered("An Event was Selected, but is WIP", Fonts.Default150Percent, ImGuiColors.DalamudOrange);
+        CkGui.FontTextCentered("Events are currently WIP", Fonts.Default150Percent, ImGuiColors.DalamudOrange);
+
+        CkGui.CenterTextAligned("Events is icon management on steroids, allowing automation to great lengths.");
+        CkGui.CenterTextAligned("Link events to various monitors, detections, and triggers for conditional application.");
+        CkGui.CenterTextAligned("Loci plans to support the following types:");
+        CkGui.CenterColorTextAligned("JobChange, GameBuffDebuff, Emote Related, Zone Related,", ImGuiColors.DalamudYellow);
+        CkGui.CenterColorTextAligned("ContentType Related, OnlineStatus, TimeOfDay, and more..", ImGuiColors.DalamudYellow);
     }
 }
