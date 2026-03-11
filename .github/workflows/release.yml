@@ -3,7 +3,7 @@ on:
   push:
     tags-ignore:
       - testing_*
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
