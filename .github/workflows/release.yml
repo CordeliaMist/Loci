@@ -28,24 +28,22 @@ jobs:
           Write-Output "Version String is $out"
           Write-Output "ver=$out" | Out-File -FilePath "$env:GITHUB_OUTPUT"
       - name: Build
-        env:
-          VER_STRING: ${{ steps.get_version.outputs.var }}
         run: |
-          $ver = $env:VER_STRING
           dotnet build --no-restore --configuration Release --nologo
       - name: Archive
         run: Compress-Archive -path "Loci/bin/x64/Release/*" -DestinationPath "Loci.zip"
       - name: Check for Release
         id: check_release_needed
         env:
-          VER_STRING: ${{ steps.get_version.outputs.var }}
+          VER_STRING: ${{ steps.get_version.outputs.ver }}
         run: |
-          $test = git tag -l | Select-String -Pattern "$env:VER_STRING"
+          $ver = $env:VER_STRING
+          $test = git tag -l | Select-String -Pattern "$ver"
           $newtag = 0
           if ($test -eq $null) {
           git config --global user.name "Actions User"
           git config --global user.email "actions@github.com"
-          git tag ${{ steps.get_version.outputs.ver }}
+          git tag $ver
           git push --tags
           $newtag = 1
           }
