@@ -32,7 +32,7 @@ jobs:
           VER_STRING: ${{ steps.get_version.outputs.var }}
         run: |
           $ver = $env:VER_STRING
-          Invoke-Expression 'dotnet build --no-restore --configuration Release --nologo -p:Version=$ver -p:FileVersion=$ver -p:AssemblyVersion=$ver'
+          dotnet build --no-restore --configuration Release --nologo
       - name: Archive
         run: Compress-Archive -path "Loci/bin/Release/*" -DestinationPath "Loci.zip"
       - name: Check for Release
