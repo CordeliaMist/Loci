@@ -25,10 +25,13 @@ jobs:
         id: get_version
         run: |
           $out = ([xml](Get-Content './Loci/Loci.csproj')).Project.PropertyGroup.Version
-          Write-Output "ver=$out" >> $GITHUB_OUTPUT
+          Write-Output "Version String is $out"
+          Write-Output "ver=$out" >> "$GITHUB_OUTPUT"
       - name: Build
+        env:
+          VER_STRING: ${{ steps.get_version.outputs.var }}
         run: |
-          $ver = ${{ steps.get_version.outputs.ver }}
+          $ver = $VER_STRING
           Invoke-Expression 'dotnet build --no-restore --configuration Release --nologo -p:Version=$ver -p:FileVersion=$ver -p:AssemblyVersion=$ver'
       - name: Archive
         run: Compress-Archive -path "Loci/bin/Release/*" -DestinationPath "Loci.zip"
