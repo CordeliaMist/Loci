@@ -1,5 +1,7 @@
 # Loci
-Applies custom Status effects to Players and companions alike.
+
+[![release](https://github.com/CordeliaMist/Loci/actions/workflows/release.yml/badge.svg?event=push)](https://github.com/CordeliaMist/Loci/actions/workflows/release.yml)
+<br />Applies custom Status effects to Players and companions alike.
 
 Includes:
 - Extensive API
