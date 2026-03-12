@@ -3,12 +3,12 @@
     "Author": "Cordelia, AndrielChaoti",
     "Name": "Loci",
     "InternalName": "Loci",
-    "AssemblyVersion": "0.0.1.0",
+    "AssemblyVersion": "0.0.2.0",
     "Punchline": "Custom status effects for players and companions alike!",
     "Description": "An inclusive and extensive custom status effect manager. Apply them to targets, group custom statuses with presets, or apply them under conditional events.",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/CordeliaMist/Loci",
-    "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Loci/refs/heads/main/Assets/icon_square.png",
+    "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Loci/main/Assets/icon_square.png",
     "Tags": [
       "Custom Status",
       "Effects",
@@ -19,8 +19,8 @@
       "Appearance"
     ],
     "DalamudApiLevel": 14,
-    "DownloadLinkInstall": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci_v0.0.1.0.zip",
-    "DownloadLinkUpdate": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci_v0.0.1.0.zip",
-    "DownloadLinkTesting": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci_v0.0.1.0.zip"
+    "DownloadLinkInstall": "https://github.com/CordeliaMist/Loci/releases/download/0.0.2.0/Loci_v0.0.2.0.zip",
+    "DownloadLinkUpdate": "https://github.com/CordeliaMist/Loci/releases/download/0.0.2.0/Loci_v0.0.2.0.zip",
+    "DownloadLinkTesting": "https://github.com/CordeliaMist/Loci/releases/download/0.0.2.0/Loci_v0.0.2.0.zip"
   }
 ]
