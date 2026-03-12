@@ -24,7 +24,7 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          $out = ([xml](Get-Output './Loci/Loci.csproj')).Project.PropertyGroup.Version
+          $out = ([xml](Get-Content './Loci/Loci.csproj')).Project.PropertyGroup.Version
           Write-Output "ver=$out" >> "$GITHUB_OUTPUT"
       - name: Build
         run: |
