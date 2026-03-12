@@ -26,7 +26,7 @@ jobs:
         run: |
           $out = ([xml](Get-Content './Loci/Loci.csproj')).Project.PropertyGroup.Version
           Write-Output "Version String is $out"
-          Write-Output "ver=$out" | Out-File -FilePath "$env:GITHUB_OUTPUT"
+          Write-Output "ver=$out".Trim() | Out-File -FilePath "$env:GITHUB_OUTPUT" -Encoding ascii
       - name: Build
         run: |
           dotnet build --no-restore --configuration Release --nologo
