@@ -31,8 +31,8 @@ public partial class LociEvent
 
     // Secondary Identifiers, special values.
     public short GearsetIdx = -1;
-    public KnownDirection Direction = KnownDirection.None;      // Emotes
-    public IntendedUseEnum IntendedUse = IntendedUseEnum.None;  // ZoneBased
+    public KnownDirection Direction = KnownDirection.Self;      // Emotes
+    public IntendedUseEnum IntendedUse = IntendedUseEnum.Town;  // ZoneBased
 
     // Whitelisted target name, Supports "PlayerName@World" and "Player Names Pet Name"
     public string WhitelistedName = string.Empty;
@@ -57,7 +57,7 @@ public partial class LociEvent
             IndicatedID = IndicatedID,
             GearsetIdx = GearsetIdx,
             Direction = Direction,
-            IntendedUse = IntendedUse,
+            IntendedUse = (byte)IntendedUse,
             WhitelistedName = WhitelistedName
         };
 
@@ -75,7 +75,7 @@ public partial class LociEvent
             IndicatedID = eventInfo.IndicatedID,
             GearsetIdx = eventInfo.GearsetIdx,
             Direction = eventInfo.Direction,
-            IntendedUse = eventInfo.IntendedUse,
+            IntendedUse = (IntendedUseEnum)eventInfo.IntendedUse,
             WhitelistedName = eventInfo.WhitelistedName
         };
     }

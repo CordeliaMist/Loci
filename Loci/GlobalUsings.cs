@@ -54,7 +54,7 @@ global using LociEventInfo = (
     uint IndicatedID,
     short GearsetIdx,
     LociApi.Enums.KnownDirection Direction,
-    LociApi.Enums.IntendedUseEnum IntendedUse,
+    byte IntendedUse,
     string WhitelistedName
 );
 
