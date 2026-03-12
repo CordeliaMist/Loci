@@ -11,6 +11,16 @@ Includes:
 - Target application
 - Companion/Pet application
 - Invokable trigger-based application
+## Installing Loci
+### **<ins>_This is a [Dalamud](https://goatcorp.github.io/faq/dalamud_troubleshooting.html) plugin. You will need Dalamud and [XIVLauncher](https://goatcorp.github.io/) installed to use it._</ins>**
 
-### Contributions
+- Once you are ingame, add the following to your list of custom repositories and click save.
+```
+https://raw.githubusercontent.com/CordeliaMist/Loci/refs/heads/main/repo.json
+```
+
+- Once the custom repository is added, install Loci like any other plugin. Search for "Loci" and click install!
+
+
+## Contributions
 Plugin Icon designed by Yuzuki!
