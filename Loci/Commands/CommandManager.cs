@@ -27,7 +27,7 @@ public sealed class CommandManager : IDisposable
         _parser = new CommandParser(InitDefinitions());
 
         // Add Host command handlers.
-        Svc.Commands.AddHandler(MainCommand, new CommandInfo(OnLocis) { HelpMessage = "Loci's CLI for commands. Use without args to toggle the UI." });
+        Svc.Commands.AddHandler(MainCommand, new CommandInfo(OnLoci) { HelpMessage = "Loci's CLI for commands. Use without args to toggle the UI." });
     }
 
     public void Dispose()
@@ -38,6 +38,7 @@ public sealed class CommandManager : IDisposable
     private void OnLoci(string command, string args)
     {
         var splitArgs = args.ToLowerInvariant().Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
+        Svc.Logger.Warning($"cmd: {command} | args: {args}");
         // if no arguments.
         if (splitArgs.Length == 0)
         {
@@ -192,10 +193,10 @@ public sealed class CommandManager : IDisposable
 
         if (string.IsNullOrEmpty(entity) && string.IsNullOrEmpty(action))
         {
-            Svc.Chat.Print(new SeStringBuilder().AddText("Loci", 527, true).AddText(" Valid args for ").AddText("/sund ", 527).AddText("are:").BuiltString);
-            Svc.Chat.Print(new SeStringBuilder().AddCommand("request", "automates the process of requests.").BuiltString);
-            Svc.Chat.Print(new SeStringBuilder().AddCommand("group", "automates various interactions with groups.").BuiltString);
-            Svc.Chat.Print(new SeStringBuilder().AddCommand("folder", "automates interactions with GroupFolders.").BuiltString);
+            Svc.Chat.Print(new SeStringBuilder().AddText("Loci", 527, true).AddText(" Valid args for ").AddText("/loci ", 527).AddText("are:").BuiltString);
+            Svc.Chat.Print(new SeStringBuilder().AddCommand("status", "apply, remove, or toggle statuses.").BuiltString);
+            Svc.Chat.Print(new SeStringBuilder().AddCommand("preset", "apply, remove, or toggle presets.").BuiltString);
+            Svc.Chat.Print(new SeStringBuilder().AddCommand("event", "create or invoke events that interact with status and presets.").BuiltString);
             return;
         }
 
@@ -331,7 +332,7 @@ public sealed class CommandManager : IDisposable
             Svc.Chat.Print(new SeStringBuilder()
                 .AddText("Loci", 527, true)
                 .AddText(" Generic Template: ")
-                .AddText("/sund group ", 527).AddYellow("<action> ").AddGreen("<Name>").AddBlue("[params]").AddText("[Flags]", 537)
+                .AddText("/loci group ", 527).AddYellow("<action> ").AddGreen("<Name>").AddBlue("[params]").AddText("[Flags]", 537)
                 .BuiltString);
             // Show possible actions
             Svc.Chat.Print(new SeStringBuilder().AddYellow("    》 Actions: ")
@@ -350,7 +351,7 @@ public sealed class CommandManager : IDisposable
         {
             case "create":
                 Svc.Chat.Print(new SeStringBuilder().AddText("Loci", 527, true).AddText(" Command ")
-                    .AddText("/sund folder create ", 527).AddText(" missing args 》").AddGreen("<Name>").AddBlue("[params]").AddText("[Flags]", 537).BuiltString);
+                    .AddText("/loci folder create ", 527).AddText(" missing args 》").AddGreen("<Name>").AddBlue("[params]").AddText("[Flags]", 537).BuiltString);
 
                 Svc.Chat.Print(new SeStringBuilder().AddGreen("    》 Name: ").AddText("The name of the new folder").BuiltString);
                 Svc.Chat.Print(new SeStringBuilder().AddBlue("    》 Params: ").AddText("-parent").BuiltString);
@@ -360,7 +361,7 @@ public sealed class CommandManager : IDisposable
             case "add":
             case "remove":
                 Svc.Chat.Print(new SeStringBuilder().AddText("Loci", 527, true).AddText(" Command ")
-                    .AddText($"/sund folder {action} ", 527).AddText(" missing args 》").AddGreen("<Name> ").BuiltString);
+                    .AddText($"/loci folder {action} ", 527).AddText(" missing args 》").AddGreen("<Name> ").BuiltString);
 
                 Svc.Chat.Print(new SeStringBuilder().AddGreen("    》 Name: ").AddText("The name of the new folder").BuiltString);
                 Svc.Chat.Print(new SeStringBuilder().AddBlue("    》 Params: ").AddText("-parent").BuiltString);

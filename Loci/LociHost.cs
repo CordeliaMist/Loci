@@ -1,4 +1,5 @@
 using Loci.Api;
+using Loci.Commands;
 using Loci.Data;
 using Loci.Gui;
 using Loci.Services;
@@ -36,6 +37,7 @@ public class LociHost : MediatorSubscriberBase, IHostedService
         // Init the plugin lifetime scope.
         _lifetimeScope = _serviceScopeFactory.CreateScope();
         _lifetimeScope.ServiceProvider.GetRequiredService<UiService>();
+        _lifetimeScope.ServiceProvider.GetRequiredService<CommandManager>();
         _lifetimeScope.ServiceProvider.GetRequiredService<IpcProviders>();
 
         TryDisplayChangelog();
