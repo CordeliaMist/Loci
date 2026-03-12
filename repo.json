@@ -8,7 +8,7 @@
     "Description": "An inclusive and extensive custom status effect manager. Apply them to targets, group custom statuses with presets, or apply them under conditional events.",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/CordeliaMist/Loci",
-    "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Loci/refs/heads/main/Assets/icon_square.png",
+    "IconUrl": "https://raw.githubusercontent.com/CordeliaMist/Loci/main/Assets/icon_square.png",
     "Tags": [
       "Custom Status",
       "Effects",
