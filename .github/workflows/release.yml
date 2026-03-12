@@ -41,25 +41,25 @@ jobs:
           VER_STRING: ${{ steps.get_version.outputs.var }}
         run: |
           $test = git tag -l | Select-String -Pattern "$env:VER_STRING"
-          $newtag = $false
+          $newtag = 0
           if ($test -eq $null) {
           git config --global user.name "Actions User"
           git config --global user.email "actions@github.com"
           git tag ${{ steps.get_version.outputs.ver }}
           git push --tags
-          $newtag = $true
+          $newtag = 1
           }
           Write-Output "New tag needed: $newtag"
           Write-Output "newtag=$newtag" | Out-File -FilePath "$env:GITHUB_OUTPUT"
           exit 1
       - name: Upload Build Artifact
-        if: ${{ steps.check_release_needed.outputs.newtag == $true }}
+        if: ${{ steps.check_release_needed.outputs.newtag == true }}
         uses: actions/upload-artifact@v4.6.2
         with:
           path: |
             .Loci/bin/x64/Release/*
       - name: Create Release
-        if: ${{ steps.check_release_needed.outputs.newtag }}
+        if: ${{ steps.check_release_needed.outputs.newtag == true }}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -70,7 +70,7 @@ jobs:
           draft: 'false'
           prerelease: 'false'
       - name: Upload Release Asset
-        if: ${{ steps.check_release_needed.outputs.newtag }}
+        if: ${{ steps.check_release_needed.outputs.newtag == true }}
         id: upload_release_asset
         uses: actions/upload-release-asset@v1
         env:
@@ -81,7 +81,7 @@ jobs:
           asset_name: Loci.zip
           asset_content_type: application/zip
       - name: Update repo.json
-        if: ${{ steps.check_release_needed.outputs.newtag }}
+        if: ${{ steps.check_release_needed.outputs.newtag == true }}
         run: |
           $ver = '${{ steps.get_version.outputs.ver }}'
           $path = './repo.json'
