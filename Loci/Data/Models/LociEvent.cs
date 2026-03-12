@@ -1,4 +1,5 @@
-﻿using LociApi.Enums;
+﻿using CkCommons;
+using LociApi.Enums;
 using MemoryPack;
 
 namespace Loci.Data;
@@ -14,17 +15,30 @@ public partial class LociEvent
     public const int Version = 1;
     public Guid GUID = Guid.NewGuid();
     public bool Enabled = false;
+    public int Priority = 0;
     public string Title = string.Empty;
     public string Description = string.Empty;
-    public LociEventType EventType;
 
+    public LociEventType EventType = LociEventType.Emote;
 
-    // Used for timers? (WIP)
-    [MemoryPackIgnore] public int Days = 0;
-    [MemoryPackIgnore] public int Hours = 0;
-    [MemoryPackIgnore] public int Minutes = 0;
-    [MemoryPackIgnore] public int Seconds = 0;
-    [MemoryPackIgnore] public bool NoExpire = false;
+    // How to respond when the spesified condition is met.
+    public ChainType ReactionType = ChainType.Status;
+    public Guid ChainedGUID = Guid.Empty;
+
+    // The primary identifier across all EventTypes
+    // Related: JobID, BuffDebuffID, EmoteID, TerritoryId, OnlineStatus
+    public uint IndicatedID = 0;
+
+    // Secondary Identifiers, special values.
+    public short GearsetIdx = -1;
+    public KnownDirection Direction = KnownDirection.None;      // Emotes
+    public IntendedUseEnum IntendedUse = IntendedUseEnum.None;  // ZoneBased
+
+    // Whitelisted target name, Supports "PlayerName@World" and "Player Names Pet Name"
+    public string WhitelistedName = string.Empty;
+
+    // Time based is WIP.
+
     public bool ShouldSerializeGUID() => GUID != Guid.Empty;
     public bool IsNull() => Description is null || Title is null;
 
@@ -34,9 +48,17 @@ public partial class LociEvent
             Version = Version,
             GUID = GUID,
             Enabled = Enabled,
+            Priority = Priority,
             Title = Title,
             Description = Description,
             EventType = EventType,
+            ReactionType = ReactionType,
+            ChainedGUID = ChainedGUID,
+            IndicatedID = IndicatedID,
+            GearsetIdx = GearsetIdx,
+            Direction = Direction,
+            IntendedUse = IntendedUse,
+            WhitelistedName = WhitelistedName
         };
 
     public static LociEvent FromTuple(LociEventInfo eventInfo)
@@ -48,6 +70,13 @@ public partial class LociEvent
             Title = eventInfo.Title,
             Description = eventInfo.Description,
             EventType = eventInfo.EventType,
+            ReactionType = eventInfo.ReactionType,
+            ChainedGUID = eventInfo.ChainedGUID,
+            IndicatedID = eventInfo.IndicatedID,
+            GearsetIdx = eventInfo.GearsetIdx,
+            Direction = eventInfo.Direction,
+            IntendedUse = eventInfo.IntendedUse,
+            WhitelistedName = eventInfo.WhitelistedName
         };
     }
 
@@ -56,5 +85,12 @@ public partial class LociEvent
         $"\nEnabled={Enabled}" +
         $"\nTitle={Title}" +
         $"\nDescription={Description}" +
-        $"\nEventType={EventType}";
+        $"\nEventType={EventType}" +
+        $"\nReactionType={ReactionType}" +
+        $"\nChainedGUID={ChainedGUID}" +
+        $"\nIndicatedID={IndicatedID}" +
+        $"\nGearsetIdx={GearsetIdx}" +
+        $"\nDirection={Direction}" +
+        $"\nIntendedUse={IntendedUse}" +
+        $"\nWhitelistedName={WhitelistedName}]";
 }

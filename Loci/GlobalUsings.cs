@@ -45,9 +45,17 @@ global using LociEventInfo = (
     int Version,
     System.Guid GUID,
     bool Enabled,
+    int Priority,
     string Title,
     string Description,
-    LociApi.Enums.LociEventType EventType
+    LociApi.Enums.LociEventType EventType,
+    LociApi.Enums.ChainType ReactionType,
+    System.Guid ChainedGUID,
+    uint IndicatedID,
+    short GearsetIdx,
+    LociApi.Enums.KnownDirection Direction,
+    LociApi.Enums.IntendedUseEnum IntendedUse,
+    string WhitelistedName
 );
 
 global using LociStatusSummary = (

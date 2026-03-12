@@ -31,7 +31,7 @@ public class StatusesTab : IDisposable
 
     private IconDataSelector _iconSelector;
     private SavedStatusesCombo _ownStatusCombo;
-    private SavedPresetsCombo _ownPresetsCombo; 
+    private SavedPresetsCombo _ownPresetsCombo;
 
     public StatusesTab(ILogger<StatusesTab> logger, LociMediator mediator, StatusSelector selector,
         LociData data, LociManager loci, FavoritesConfig favorites)
@@ -207,7 +207,7 @@ public class StatusesTab : IDisposable
                 ImGui.SetCursorPos(cursor);
                 if (_iconSelector.Draw(status))
                 {
-                    Svc.Logger.Warning($"Selected new Status Icon: {status.IconID}"); 
+                    Svc.Logger.Verbose($"Selected new Status Icon: {status.IconID}"); 
                     CleanupStatus(status);
                     _data.MarkStatusModified(status);
                 }
@@ -620,12 +620,12 @@ public class StatusesTab : IDisposable
     // When a status is changed, it should be cleaned up to respect the new properties.
     private void CleanupStatus(LociStatus status)
     {
-        Svc.Logger.Information($"Total IconStacks determined by LociProcessor: {LociProcessor.IconStackCounts.Count}");
+        Svc.Logger.Debug($"Total IconStacks determined by LociProcessor: {LociProcessor.IconStackCounts.Count}");
         var maxStacks = LociProcessor.IconStackCounts.TryGetValue((uint)status.IconID, out var count) ? (int)count : 1;
         status.Stacks = maxStacks < 1 ? 1 : Math.Min(status.Stacks, maxStacks);
         status.StackSteps = maxStacks < 1 ? 0 : Math.Min(status.StackSteps, maxStacks);
         status.StackToChain = maxStacks;
-        Svc.Logger.Information($"Max Stacks calculated: {maxStacks} | InitStacks: {status.Stacks} | Steps: {status.StackSteps}");
+        Svc.Logger.Debug($"Max Stacks calculated: {maxStacks} | InitStacks: {status.Stacks} | Steps: {status.StackSteps}");
         // Ensure modifiers are correct.
         status.Modifiers = (status.StackSteps > 0)
             ? status.Modifiers | Modifiers.StacksIncrease : status.Modifiers & ~Modifiers.StacksIncrease;
