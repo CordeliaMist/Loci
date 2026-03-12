@@ -9,10 +9,18 @@
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/CordeliaMist/Loci",
     "IconUrl": "https://raw.githubusercontent.com/Loci/repo/main/Assets/icon.png",
-    "Tags": [ "Custom Status", "Effects", "Companion", "Vfx", "Customization", "Character", "Appearance" ],
+    "Tags": [
+      "Custom Status",
+      "Effects",
+      "Companion",
+      "Vfx",
+      "Customization",
+      "Character",
+      "Appearance"
+    ],
     "DalamudApiLevel": 14,
-    "DownloadLinkInstall": "https://files.kinkporium.studio/releases/loci/0.0.1.0.zip",
-    "DownloadLinkUpdate": "https://files.kinkporium.studio/releases/loci/0.0.1.0.zip",
-    "DownloadLinkTesting": "https://files.kinkporium.studio/releases/loci/0.0.1.0.zip"
+    "DownloadLinkInstall": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci.zip",
+    "DownloadLinkUpdate": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci.zip",
+    "DownloadLinkTesting": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci.zip"
   }
 ]
