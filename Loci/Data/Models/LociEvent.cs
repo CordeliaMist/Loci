@@ -23,13 +23,16 @@ public partial class LociEvent
 
     // How to respond when the spesified condition is met.
     public ChainType ReactionType = ChainType.Status;
-    public Guid ChainedGUID = Guid.Empty;
+    public Guid ReactionGUID = Guid.Empty;
+    // Who to apply the reactionGUID to.
+    public string ReactionTarget = string.Empty;
 
     // The primary identifier across all EventTypes
-    // Related: JobID, BuffDebuffID, EmoteID, TerritoryId, OnlineStatus
+    // Related: BuffDebuffID, EmoteID, TerritoryId, OnlineStatus
     public uint IndicatedID = 0;
 
     // Secondary Identifiers, special values.
+    public JobFlags JobFlags = JobFlags.None;
     public short GearsetIdx = -1;
     public KnownDirection Direction = KnownDirection.Self;      // Emotes
     public IntendedUseEnum IntendedUse = IntendedUseEnum.Town;  // ZoneBased
@@ -42,6 +45,8 @@ public partial class LociEvent
     public bool ShouldSerializeGUID() => GUID != Guid.Empty;
     public bool IsNull() => Description is null || Title is null;
 
+    public bool IsZoneBased() => IntendedUse is IntendedUseEnum.UNK;
+
     public LociEventInfo ToTuple()
         => new LociEventInfo
         {
@@ -53,30 +58,34 @@ public partial class LociEvent
             Description = Description,
             EventType = EventType,
             ReactionType = ReactionType,
-            ChainedGUID = ChainedGUID,
+            ReactionGUID = ReactionGUID,
+            ReactionTarget = ReactionTarget,
             IndicatedID = IndicatedID,
+            JobFlags = JobFlags,
             GearsetIdx = GearsetIdx,
             Direction = Direction,
             IntendedUse = (byte)IntendedUse,
             WhitelistedName = WhitelistedName
         };
 
-    public static LociEvent FromTuple(LociEventInfo eventInfo)
+    public static LociEvent FromTuple(LociEventInfo info)
     {
         return new LociEvent
         {
-            GUID = eventInfo.GUID,
-            Enabled = eventInfo.Enabled,
-            Title = eventInfo.Title,
-            Description = eventInfo.Description,
-            EventType = eventInfo.EventType,
-            ReactionType = eventInfo.ReactionType,
-            ChainedGUID = eventInfo.ChainedGUID,
-            IndicatedID = eventInfo.IndicatedID,
-            GearsetIdx = eventInfo.GearsetIdx,
-            Direction = eventInfo.Direction,
-            IntendedUse = (IntendedUseEnum)eventInfo.IntendedUse,
-            WhitelistedName = eventInfo.WhitelistedName
+            GUID = info.GUID,
+            Enabled = info.Enabled,
+            Title = info.Title,
+            Description = info.Description,
+            EventType = info.EventType,
+            ReactionType = info.ReactionType,
+            ReactionGUID = info.ReactionGUID,
+            ReactionTarget = info.ReactionTarget,
+            IndicatedID = info.IndicatedID,
+            JobFlags = info.JobFlags,
+            GearsetIdx = info.GearsetIdx,
+            Direction = info.Direction,
+            IntendedUse = (IntendedUseEnum)info.IntendedUse,
+            WhitelistedName = info.WhitelistedName
         };
     }
 
@@ -87,8 +96,10 @@ public partial class LociEvent
         $"\nDescription={Description}" +
         $"\nEventType={EventType}" +
         $"\nReactionType={ReactionType}" +
-        $"\nChainedGUID={ChainedGUID}" +
+        $"\nReactionGUID={ReactionGUID}" +
+        $"\nReactionTarget={ReactionTarget}" +
         $"\nIndicatedID={IndicatedID}" +
+        $"\nJobFlags={JobFlags}" +
         $"\nGearsetIdx={GearsetIdx}" +
         $"\nDirection={Direction}" +
         $"\nIntendedUse={IntendedUse}" +

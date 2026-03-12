@@ -6,6 +6,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -145,6 +146,34 @@ public static class Utils
             Description = eventInfo.Description,
             EventType = eventInfo.EventType
         };
+
+    public static void ApplyFirstMatch(this List<LociEvent> candidates)
+    {
+        // Invoke the first match.
+        foreach (var match in candidates)
+        {
+            if (match.ReactionType is ChainType.Status)
+            {
+                if (LociData.Statuses.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not { } data)
+                    continue;
+                // Fail if already present.
+                if (LociManager.ClientSM.Statuses.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not null && !data.Modifiers.Has(Modifiers.StacksIncrease))
+                    continue;
+                // Apply
+                LociManager.ClientSM.AddOrUpdate(data.PreApply());
+                break;
+            }
+            else
+            {
+                if (LociData.Presets.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not { } data)
+                    continue;
+                // Apply
+                var toApply = data.ApplyType = PresetApplyType.IgnoreExisting;
+                LociManager.ClientSM.ApplyPreset(data);
+                break;
+            }
+        }
+    }
 
     public unsafe static List<string> GetFriendlist()
     {
@@ -295,6 +324,17 @@ public static class Utils
             _ => "UNK"
         };
 
+    public static string ToDisplayName(this KnownDirection type)
+        => type switch
+        {
+            KnownDirection.Self => "From Self",
+            KnownDirection.SelfToOther => "From you to others",
+            KnownDirection.Other => "From Others",
+            KnownDirection.OtherToSelf => "From others to You",
+            KnownDirection.Any => "Any Filter",
+            _ => "UNK"
+        };
+
     /// <summary>
     ///     Have a blank, and multi selected compressed text output for a printed multi-selection.
     /// </summary>
@@ -404,6 +444,45 @@ public static class Utils
                 CkRichText.Text(preset, 100);
             }
         }
+    }
+
+    public static void AttachTooltip(this ParsedEmote emote, IDalamudTextureWrap img)
+    {
+        if (ImGui.IsItemHovered(ImGuiHoveredFlags.RectOnly))
+        {
+            using var s = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.One * 8f)
+                .Push(ImGuiStyleVar.WindowRounding, 4f)
+                .Push(ImGuiStyleVar.PopupRounding, 4f);
+            using var c = ImRaii.PushColor(ImGuiCol.Border, ImGuiColors.ParsedPink);
+            using var popup = ImRaii.Tooltip();
+            using (ImRaii.Group())
+            {
+                ImGui.Image(img.Handle, new Vector2(ImGui.GetFrameHeight() * 2));
+                ImGui.SameLine();
+                using (ImRaii.Group())
+                {
+                    ImGui.Text(emote.Name);
+                    CkGui.ColorTextInline($"(Id: {emote.RowId})", CkGui.Color(ImGuiColors.DalamudGrey2));
+                    CkGui.ColorText($"(Icon: {emote.IconId})", CkGui.Color(ImGuiColors.DalamudGrey));
+                }
+            }
+            ImGui.Separator();
+
+            CkGui.ColorText("Commands:", ImGuiColors.ParsedGold);
+            CkGui.TextInline(string.Join(", ", emote.CommandsSafe.Select(cmd => "/" + cmd)));
+        }
+    }
+
+    public static void ShowFormattingInfo()
+    {
+        CkGui.FramedHoverIconText(FAI.Code, LociCol.Gold.Uint());
+        CkGui.AttachToolTip($"This supports formatting tags." +
+            $"--NL----COL--Colors:--COL-- [color=red]...[/color], [color=5]...[/color]" +
+            $"--NL----COL--Glow:--COL-- [glow=blue]...[/glow], [glow=7]...[/glow]" +
+            $"--NL----COL--Italics:--COL-- [i]...[/i]" +
+            $"--SEP--The following colors are available:" +
+            $"--NL--{string.Join(", ", Enum.GetValues<XlDataUiColor>().Select(x => x.ToString()).Where(x => !x.StartsWith("_")))}" +
+            $"--SEP--For extra color, look up numeric value with --COL--\"/xldata uicolor\"--COL-- command", ImGuiColors.DalamudViolet);
     }
 
 

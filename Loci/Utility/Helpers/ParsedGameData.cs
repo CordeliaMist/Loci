@@ -3,24 +3,19 @@ using System.Collections.Immutable;
 
 namespace Loci.Data;
 
-/// <summary>
-/// An internal struct that extracts only the information we care about
-/// from an EmoteRow for efficient loading and caching.
-/// </summary>
-public readonly record struct ParsedEmoteRow : IEquatable<ParsedEmoteRow>
+public readonly record struct ParsedEmote : IEquatable<ParsedEmote>
 {
     public readonly uint RowId;
-    public readonly ushort IconId;
+    public readonly uint IconId;
     public readonly string Name;
     public readonly byte EmoteConditionMode;
 
     public readonly ImmutableArray<string> EmoteCommands;
 
-    // maybe remove idk.
     public IEnumerable<string> CommandsSafe 
         => EmoteCommands.IsDefault ? Enumerable.Empty<string>() : EmoteCommands;
 
-    public ParsedEmoteRow()
+    public ParsedEmote()
     {
         RowId = 0;
         IconId = 450;
@@ -29,10 +24,10 @@ public readonly record struct ParsedEmoteRow : IEquatable<ParsedEmoteRow>
         EmoteCommands = ImmutableArray<string>.Empty;
     }
 
-    public ParsedEmoteRow(Emote emote)
+    public ParsedEmote(Emote emote)
     {
         RowId = emote.RowId;
-        IconId = (ushort)(emote.Icon == 64350 ? 405 : emote.Icon);
+        IconId = (emote.Icon == 64350 ? 405 : emote.Icon);
         Name = emote.Name.ToString();
         EmoteConditionMode = emote.EmoteMode.Value.ConditionMode;
 
@@ -61,9 +56,41 @@ public readonly record struct ParsedEmoteRow : IEquatable<ParsedEmoteRow>
         => Name;
 
     /// <inheritdoc/>
-    public bool Equals(ParsedEmoteRow other)
+    public bool Equals(ParsedEmote other)
         => RowId == other.RowId;
 
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => RowId.GetHashCode();
+}
+
+public readonly record struct ParsedOnlineStatus : IEquatable<ParsedOnlineStatus>
+{
+    public readonly uint RowId;
+    public readonly string Name;
+    public readonly uint IconId;
+    public ParsedOnlineStatus()
+    {
+        RowId = 0;
+        Name = string.Empty;
+        IconId = 450;
+    }
+    public ParsedOnlineStatus(OnlineStatus status)
+    {
+        RowId = status.RowId;
+        Name = status.Name.ToString();
+        IconId = status.Icon;
+    }
+    public string InfoString
+        => $"Online Status: {Name} ({RowId})(Icon {IconId})\n";
+    /// <inheritdoc/>
+    public override string ToString()
+        => Name;
+
+    /// <inheritdoc/>
+    public bool Equals(ParsedOnlineStatus other)
+        => RowId == other.RowId;
+    
     /// <inheritdoc/>
     public override int GetHashCode()
         => RowId.GetHashCode();

@@ -3,10 +3,16 @@ using Dalamud.Game.Gui.FlyText;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using Loci.Data;
 using Loci.Services;
+using Loci.Services.Mediator;
 using LociApi.Enums;
 using Microsoft.Extensions.Hosting;
+using OtterGui.String;
+using OtterGui.Text.Widget.Editors;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.Xml;
 
@@ -15,17 +21,26 @@ namespace Loci.Processors;
 public unsafe partial class LociMemory : IHostedService
 {
     private readonly ILogger<LociMemory> _logger;
+    private readonly LociMediator _mediator;
     private readonly MainConfig _config;
-    public LociMemory(ILogger<LociMemory> logger, MainConfig config)
+    private readonly LociEventData _eventData;
+    public LociMemory(ILogger<LociMemory> logger, LociMediator mediator, MainConfig config, LociEventData eventData)
     {
         _logger = logger;
+        _mediator = mediator;
         _config = config;
+        _eventData = eventData;
 
         logger.LogInformation("Initializing Memory");
         Svc.Hook.InitializeFromAttributes(this);
         // Hook the function delegate as well.
         AtkComponentIconText_LoadIconByID = Marshal.GetDelegateForFunctionPointer<AtkComponentIconText_LoadIconByIDDelegate>(Svc.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 8D 45 3D"));
+        ProcessEmoteHook = Svc.Hook.HookFromSignature<OnEmoteFuncDelegate>("E8 ?? ?? ?? ?? 48 8D 8B ?? ?? ?? ?? 4C 89 74 24", ProcessEmoteDetour);
+        ProcessGearsetChangeHook = Svc.Hook.HookFromAddress<GearsetChangedDelegate>((nint)RaptureGearsetModule.MemberFunctionPointers.EquipGearsetInternal, GearsetChangedDetour);
+
         ReceiveAtkCompIconTxtEventHook.SafeEnable();
+        ProcessEmoteHook.SafeEnable();
+        ProcessGearsetChangeHook.SafeEnable();
         SheApplierHook.SafeEnable();
         BattleLog_AddToScreenLogWithScreenLogKindHook.SafeEnable();
     }
@@ -40,10 +55,13 @@ public unsafe partial class LociMemory : IHostedService
     {
         // Safe disable-dispose all hooks, and clear funcs.
         ReceiveAtkCompIconTxtEventHook.SafeDispose();
+        ProcessEmoteHook.SafeDispose();
+        ProcessGearsetChangeHook.SafeDispose();
         SheApplierHook.SafeDispose();
         BattleLog_AddToScreenLogWithScreenLogKindHook.SafeDispose();
         // Clear the function delegates.
         ReceiveAtkCompIconTxtEventHook = null!;
+        ProcessEmoteHook = null!;
         SheApplierHook = null!;
         BattleLog_AddToScreenLogWithScreenLogKindHook = null!;
         AtkComponentIconText_LoadIconByID = null!;
@@ -156,70 +174,6 @@ public unsafe partial class LociMemory : IHostedService
             _logger.LogError($"Error in SpawnSHE: {e}");
         }
     }
-
-    // Esuna, Medica -> CastID: 7568
-    public delegate void BattleLog_AddToScreenLogWithScreenLogKind(nint target, nint source, FlyTextKind kind, byte a4, byte a5, int actionID, int statusID, int stackCount, int damageType);
-    [Signature("48 85 C9 0F 84 ?? ?? ?? ?? 56 41 56", DetourName = nameof(BattleLog_AddToScreenLogWithScreenLogKindDetour), Fallibility = Fallibility.Auto)]
-    internal static Hook<BattleLog_AddToScreenLogWithScreenLogKind> BattleLog_AddToScreenLogWithScreenLogKindHook = null!;
-    public unsafe void BattleLog_AddToScreenLogWithScreenLogKindDetour(nint target, nint source, FlyTextKind kind, byte a4, byte a5, int actionID, int statusID, int stackCount, int damageType)
-    {
-        try
-        {
-            _logger.LogTrace($"BattleLog_AddActionLogMessageDetour: {target:X16}, {source:X16}, {kind}, {a4}, {a5}, {actionID}, {statusID}, {stackCount}, {damageType}", LoggerType.Memory);
-            // If the Status can be Esunad
-            if (_config.Current.AllowEsuna)
-            {
-                // If action is Esuna
-                if (actionID == 7568 && kind is FlyTextKind.HasNoEffect)
-                {
-                    // Only check logic if the source and target are valid actors.
-                    if (CharaWatcher.TryGetValue(source, out Character* chara) && CharaWatcher.TryGetValue(target, out Character* targetChara))
-                    {
-                        // Check permission (Must be allowing from others, or must be from self)
-                        if (_config.Current.OthersCanEsuna || chara->ObjectIndex == 0)
-                        {
-                            // Grab the status manager. (Do not trigger on Ephemeral, wait for them to update via IPC)
-                            if (LociManager.GetFromChara(targetChara) is { } manager && !manager.Ephemeral)
-                            {
-                                bool fromClient = chara->ObjectIndex == 0;
-
-                                foreach (LociStatus status in manager.Statuses)
-                                {
-                                    // Ensure only negative statuses are dispelled.
-                                    if (status.Type != StatusType.Negative) continue;
-                                    // If it cannot be dispelled, skip it.
-                                    else if (!status.Modifiers.Has(Modifiers.CanDispel)) continue;
-                                    // Client cannot dispel locked statuses.
-                                    else if (fromClient && manager.LockedStatuses.ContainsKey(status.GUID)) continue;
-                                    // Prevent dispelling if not from client and others are not allowed.
-                                    else if (!fromClient && !_config.Current.OthersCanEsuna) continue;
-                                    // Others cannot dispel if they are not whitelisted.
-                                    else if (!IsValidDispeller(status, chara)) continue;
-
-                                    // Perform the dispel, expiring the timer. Also apply the chain if desired.
-                                    status.ExpiresAt = 0;
-                                    if (status.ChainedGUID != Guid.Empty && status.ChainTrigger is ChainTrigger.Dispel)
-                                    {
-                                        status.ApplyChain = true;
-                                    }
-                                    // This return is to not show the failed message
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (Bagagwa e)
-        {
-            _logger.LogError($"Error in BattleLog_AddToScreenLogWithScreenLogKindDetour: {e}");
-        }
-        BattleLog_AddToScreenLogWithScreenLogKindHook.Original(target, source, kind, a4, a5, actionID, statusID, stackCount, damageType);
-    }
-
-    private static unsafe bool IsValidDispeller(LociStatus status, Character* chara)
-        => status.Dispeller.Length is 0 || status.Dispeller == chara->GetNameWithWorld();
 }
 #pragma warning restore CS0649 // Ignore "Field is never assigned to" warnings for IPC fields
 

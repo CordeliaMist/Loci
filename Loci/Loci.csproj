@@ -18,24 +18,24 @@
 
     <ItemGroup>
         <!--For PInvoke replacement-->
-        <Reference Include="TerraFX.Interop.Windows" Private="false"/>
+        <Reference Include="TerraFX.Interop.Windows" Private="false" />
         <!--Submodules-->
-        <ProjectReference Include="..\Submodules\CkCommons\CkCommons.csproj"/>
-        <ProjectReference Include="..\Submodules\LociAPI\Loci.Api.csproj"/>
-        <ProjectReference Include="..\Submodules\OtterGui\OtterGui.csproj"/>
+        <ProjectReference Include="..\Submodules\CkCommons\CkCommons.csproj" />
+        <ProjectReference Include="..\Submodules\LociAPI\Loci.Api.csproj" />
+        <ProjectReference Include="..\Submodules\OtterGui\OtterGui.csproj" />
         <!--For SignalR server connectivity, helpful for server connectivity processing-->
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
 
         <!--For MemoryPacking of Loci data and transfer (And SMA Data possibly)-->
-        <PackageReference Include="MemoryPack" Version="1.21.4"/>
-        <PackageReference Include="MemoryPack.Core" Version="1.21.4"/>
-        <PackageReference Include="MemoryPack.Generator" Version="1.21.4"/>
+        <PackageReference Include="MemoryPack" Version="1.21.4" />
+        <PackageReference Include="MemoryPack.Core" Version="1.21.4" />
+        <PackageReference Include="MemoryPack.Generator" Version="1.21.4" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include=".Notices\LociReadme.md"/>
+        <None Include=".Notices\LociReadme.md" />
     </ItemGroup>
 
     <ItemGroup>

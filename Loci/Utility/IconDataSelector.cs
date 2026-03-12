@@ -85,21 +85,89 @@ public class IconDataSelector
         using (var _ = CkRaii.Child("icon tables scrollable", new(ImGui.GetContentRegionAvail().X, CkStyle.GetFrameRowsHeight(12))))
         {
             if (FavoritesConfig.IconIDs.Count > 0 && ImGui.CollapsingHeader("Favorites"))
-                changed |= DrawIconTable(status, statusInfos.Where(x => FavoritesConfig.IconIDs.Contains(x.IconID)).OrderBy(x => x.IconID));
-            
+                DrawIconTable(status.IconID, statusInfos.Where(x => FavoritesConfig.IconIDs.Contains(x.IconID)).OrderBy(x => x.IconID), OnIconSelected);
+
             if (ImGui.CollapsingHeader("Positive Status Effects"))
-                changed |= DrawIconTable(status, statusInfos.Where(x => x.Type is IconType.Positive).OrderBy(x => x.IconID));
-            
+                DrawIconTable(status.IconID, statusInfos.Where(x => x.Type is IconType.Positive).OrderBy(x => x.IconID), OnIconSelected);
+
+
             if (ImGui.CollapsingHeader("Negative Status Effects"))
-                changed |= DrawIconTable(status, statusInfos.Where(x => x.Type is IconType.Negative).OrderBy(x => x.IconID));
-            
+                DrawIconTable(status.IconID, statusInfos.Where(x => x.Type is IconType.Negative).OrderBy(x => x.IconID), OnIconSelected);
+
+
             if (ImGui.CollapsingHeader("Special Status Effects"))
-                changed |= DrawIconTable(status, statusInfos.Where(x => x.Type is IconType.Special).OrderBy(x => x.IconID));
+                DrawIconTable(status.IconID, statusInfos.Where(x => x.Type is IconType.Special).OrderBy(x => x.IconID), OnIconSelected);
         }
         return changed;
+
+        void OnIconSelected(StatusIconData newIcon)
+        {
+            // Ensure we update the title and description if the data matched.
+            var oldInfo = Utils.GetIconData(status.IconID);
+            if (AutoFill)
+            {
+                if (status.Title.Length is 0 || status.Title == oldInfo?.Name)
+                    status.Title = newIcon.Name;
+
+                if (status.Description.Length is 0 || status.Description == oldInfo?.Description)
+                    status.Description = newIcon.Description;
+            }
+            // Update icon regardless, then return true
+            status.IconID = newIcon.IconID;
+            changed = true;
+        }
     }
 
-    private bool DrawIconTable(LociStatus status, IEnumerable<StatusIconData> allInfos)
+    public bool Draw(LociEvent lociEvent)
+    {
+        var statusInfos = IconArray.Select(Utils.GetIconData).Where(x => x.HasValue).Cast<StatusIconData>();
+        ImGui.SetNextItemWidth(150f);
+        ImGui.InputTextWithHint("##search", "Filter...", ref _filterStr, 50);
+        ImGui.SameLine();
+        var autoFill = AutoFill;
+        if (ImGui.Checkbox("Prefill Data", ref autoFill))
+            AutoFill = autoFill;
+        CkGui.HelpText("Changes the Status title and description upon selection.");
+
+        ImGui.SameLine();
+        if (Stackable.Draw("Stackable", _stackable, out var newVal))
+            _stackable = newVal;
+        CkGui.HelpText("All effects, only icons that stack, or only icons that don't stack.");
+
+        CkGui.TextFrameAlignedInline("Class/Job:");
+        ImGui.SameLine();
+        DrawJobCombo(120f);
+
+        CkGui.TextFrameAlignedInline("Sorting:");
+        ImUtf8.SameLineInner();
+        if (CkGuiUtils.EnumCombo("##order", 100f, _sortStyle, out var newStyle))
+            _sortStyle = newStyle;
+
+        var changed = false;
+        using (var _ = CkRaii.Child("icon tables scrollable", new(ImGui.GetContentRegionAvail().X, CkStyle.GetFrameRowsHeight(12))))
+        {
+            if (FavoritesConfig.IconIDs.Count > 0 && ImGui.CollapsingHeader("Favorites"))
+                DrawIconTable(lociEvent.IndicatedID, statusInfos.Where(x => FavoritesConfig.IconIDs.Contains(x.IconID)).OrderBy(x => x.IconID), OnSelected);
+
+            if (ImGui.CollapsingHeader("Positive Status Effects"))
+                DrawIconTable(lociEvent.IndicatedID, statusInfos.Where(x => x.Type is IconType.Positive).OrderBy(x => x.IconID), OnSelected);
+
+            if (ImGui.CollapsingHeader("Negative Status Effects"))
+                DrawIconTable(lociEvent.IndicatedID, statusInfos.Where(x => x.Type is IconType.Negative).OrderBy(x => x.IconID), OnSelected);
+
+            if (ImGui.CollapsingHeader("Special Status Effects"))
+                DrawIconTable(lociEvent.IndicatedID, statusInfos.Where(x => x.Type is IconType.Special).OrderBy(x => x.IconID), OnSelected);
+        }
+        return changed;
+
+        void OnSelected(StatusIconData newData)
+        {
+            lociEvent.IndicatedID = newData.IconID;
+            changed = true;
+        }
+    }
+
+    private void DrawIconTable(uint curIconId, IEnumerable<StatusIconData> allInfos, Action<StatusIconData> onSelected)
     {
         var infos = ApplyFilters(allInfos);
 
@@ -116,7 +184,7 @@ public class IconDataSelector
         // Determine the total columns, and then display the table.
         var cols = Math.Clamp((int)(ImGui.GetWindowSize().X / 200f), 1, 10);
         using var table = ImRaii.Table("StatusTable", cols, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame);
-        if (!table) return false;
+        if (!table) return;
 
         // Setup the columns
         for (var i = 0; i < cols; i++)
@@ -137,29 +205,16 @@ public class IconDataSelector
                 CkGui.AttachToolTip($"{info.IconID}--SEP----COL--{info.Description}--COL--", ImGuiColors.DalamudGrey2);
 
                 ImGui.SameLine();
-                if (ImGui.RadioButton($"{info.Name}##{info.IconID}", status.IconID == info.IconID))
+                if (ImGui.RadioButton($"{info.Name}##{info.IconID}", curIconId == info.IconID))
                 {
-                    // Ensure we update the title and description if the data matched.
-                    var oldInfo = Utils.GetIconData(status.IconID);
-                    if (AutoFill)
-                    {
-                        if (status.Title.Length is 0 || status.Title == oldInfo?.Name)
-                            status.Title = info.Name;
-
-                        if (status.Description.Length is 0 || status.Description == oldInfo?.Description)
-                            status.Description = info.Description;
-                    }
-                    // Update icon regardless, then return true
-                    status.IconID = info.IconID;
-                    return true;
+                    onSelected?.Invoke(info);
+                    return;
                 }
 
                 ImGui.SameLine();
                 FavStar.Draw(_favorites, info.IconID, true);
             }
         }
-
-        return false;
     }
 
     private IEnumerable<StatusIconData> ApplyFilters(IEnumerable<StatusIconData> toFilter)

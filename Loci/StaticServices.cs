@@ -1,9 +1,10 @@
-using Dalamud.Game.ClientState.Conditions;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Loci.Data;
 using Lumina.Excel.Sheets;
 using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Loci;
@@ -47,28 +48,34 @@ public class Svc
 // For the data that is only really initialized once based on the current client language.
 public static class GameDataSvc
 {
+    public static ImmutableList<Emote> ValidEmoteCache { get; private set; }
+    public static ImmutableList<ParsedEmote> ValidLightEmoteCache { get; private set; }
+    public static FrozenDictionary<uint, ParsedEmote> EmoteData { get; private set; } = null!;
+    public static FrozenDictionary<byte, ParsedOnlineStatus> OnlineStatus { get; private set; } = null!;
     public static FrozenDictionary<uint, string> JobData { get; private set; } = null!;
-    public static FrozenDictionary<byte, string> DataCenterData { get; private set; } = null!;
     public static FrozenDictionary<ushort, string> WorldData { get; private set; } = null!;
     public static FrozenDictionary<ushort, string> TerritoryData { get; private set; } = null!;
 
-    public static bool IsZoning => Svc.Condition[ConditionFlag.BetweenAreas] || Svc.Condition[ConditionFlag.BetweenAreas51];
-
-
     public static bool _isInitialized = false;
-
     public static void Init(IDalamudPluginInterface pi)
     {
         if (_isInitialized)
             return;
 
-        JobData = Svc.Data.GetExcelSheet<ClassJob>(Svc.ClientState.ClientLanguage)!
-            .ToDictionary(k => k.RowId, k => k.NameEnglish.ToString())
+        ValidEmoteCache = Svc.Data.GetExcelSheet<Emote>().Where(x => x.EmoteCategory.IsValid && !x.Name.ExtractText().IsNullOrWhitespace()).ToImmutableList();
+        ValidLightEmoteCache = ValidEmoteCache.Select(x => new ParsedEmote(x)).ToImmutableList();
+        EmoteData = Svc.Data.GetExcelSheet<Emote>()
+            .Where(x => x.EmoteCategory.IsValid && !string.IsNullOrWhiteSpace(x.Name.ExtractText()))
+            .ToDictionary(e => e.RowId, e => new ParsedEmote(e))
             .ToFrozenDictionary();
 
-        DataCenterData = Svc.Data.GetExcelSheet<WorldDCGroupType>(Svc.ClientState.ClientLanguage)!
-            .Where(dc => dc.Region != 0 && dc.Region < 5) // Exclude invalid/unused regions.
-            .ToDictionary(dc => (byte)dc.RowId, dc => dc.Name.ToString())
+        OnlineStatus = Svc.Data.GetExcelSheet<OnlineStatus>()
+            .Where(x => !x.Unknown1 && !string.IsNullOrWhiteSpace(x.Name.ExtractText()))
+            .ToDictionary(s => (byte)s.RowId, s => new ParsedOnlineStatus(s))
+            .ToFrozenDictionary();
+
+        JobData = Svc.Data.GetExcelSheet<ClassJob>(Svc.ClientState.ClientLanguage)!
+            .ToDictionary(k => k.RowId, k => k.NameEnglish.ToString())
             .ToFrozenDictionary();
 
         WorldData = Svc.Data.GetExcelSheet<World>(Svc.ClientState.ClientLanguage)!

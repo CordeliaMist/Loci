@@ -234,7 +234,8 @@ public class StatusesTab : IDisposable
             ImGui.TableNextColumn();
             CkGui.TextFrameAligned("Title");
             ImUtf8.SameLineInner();
-            ColorFormatting();
+            Utils.ShowFormattingInfo();
+
             var titleErr = Utils.ParseBBSeString(status.Title, out bool hadError);
             if (hadError)
                 CkGui.HelpText(titleErr.TextValue, true, CkCol.TriStateCross.Uint());
@@ -265,7 +266,7 @@ public class StatusesTab : IDisposable
             ImGui.TableNextColumn();
             CkGui.TextFrameAligned("Description");
             ImUtf8.SameLineInner();
-            ColorFormatting();
+            Utils.ShowFormattingInfo();
             var descErr = Utils.ParseBBSeString(status.Description, out bool descError);
             if (descError)
                 CkGui.HelpText(descErr.TextValue, true, CkCol.TriStateCross.Uint());
@@ -635,17 +636,5 @@ public class StatusesTab : IDisposable
             status.Modifiers &= ~Modifiers.CanDispel;
             status.Dispeller = string.Empty;
         }
-    }
-
-    private void ColorFormatting()
-    {
-        CkGui.FramedHoverIconText(FAI.Code, LociCol.Gold.Uint());
-        CkGui.AttachToolTip($"This supports formatting tags." +
-            $"--NL----COL--Colors:--COL-- [color=red]...[/color], [color=5]...[/color]" +
-            $"--NL----COL--Glow:--COL-- [glow=blue]...[/glow], [glow=7]...[/glow]" +
-            $"--NL----COL--Italics:--COL-- [i]...[/i]" +
-            $"--SEP--The following colors are available:" +
-            $"--NL--{string.Join(", ", Enum.GetValues<XlDataUiColor>().Select(x => x.ToString()).Where(x => !x.StartsWith("_")))}" +
-            $"--SEP--For extra color, look up numeric value with --COL--\"/xldata uicolor\"--COL-- command", ImGuiColors.DalamudViolet);
     }
 }
