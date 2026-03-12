@@ -19,8 +19,8 @@
       "Appearance"
     ],
     "DalamudApiLevel": 14,
-    "DownloadLinkInstall": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci.zip",
-    "DownloadLinkUpdate": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci.zip",
-    "DownloadLinkTesting": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci.zip"
+    "DownloadLinkInstall": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci_v0.0.1.0.zip",
+    "DownloadLinkUpdate": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci_v0.0.1.0.zip",
+    "DownloadLinkTesting": "https://github.com/CordeliaMist/Loci/releases/download/0.0.1.0/Loci_v0.0.1.0.zip"
   }
 ]
