@@ -26,7 +26,7 @@ jobs:
         run: |
           $out = ([xml](Get-Content './Loci/Loci.csproj')).Project.PropertyGroup.Version
           Write-Output "Version String is $out"
-          Write-Output "ver=$out" >> "$GITHUB_OUTPUT"
+          Write-Output "ver=$out" | Out-File -FilePath "$GITHUB_OUTPUT"
       - name: Build
         env:
           VER_STRING: ${{ steps.get_version.outputs.var }}
