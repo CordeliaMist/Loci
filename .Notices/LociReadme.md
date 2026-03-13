@@ -33,7 +33,5 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 ## Relevance
 Loci provides **public API endpoints** and extends existing functionality.  
-Its goal is to offer accessible control over custom statuses owned by the client, and other users.  
-
-Loci now has grown to expose several new IPC endpoints, its own locking system, and polished target application system.  
-> There is no exclusivity with Loci — it is designed for those who want full control over custom statuses.
+Its goal is to offer accessible control over custom statuses owned by the client, and other users.
+Overtime, it has grown its own identity and featureset that helps it stand out as its own project
