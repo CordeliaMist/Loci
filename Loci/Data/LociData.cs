@@ -45,7 +45,7 @@ public sealed class LociData : IHybridSavable
 
     public LociPreset CreatePreset(string name)
     {
-        name = RegexEx.EnsureUniqueName(name, _statuses, (s) => s.Title);
+        name = RegexEx.EnsureUniqueName(name, _presets, (s) => s.Title);
         var newPreset = new LociPreset() { Title = name };
         _presets.Add(newPreset);
         _saver.Save(this);
