@@ -80,7 +80,7 @@ public static class Utils
     };
 
     /// <summary>
-    ///     Prepares to apply a LociStatus with the given preparation options. 
+    ///     Prepares to apply a LociStatus with the given preparation options.
     /// </summary>
     public unsafe static LociStatus PreApply(this LociStatus status, params PrepareOptions[] opts)
     {
@@ -371,10 +371,9 @@ public static class Utils
         }
 
         CkGui.ColorText("Duration:", ImGuiColors.ParsedGold);
-        var length = TimeSpan.FromTicks(item.NoExpire ? -1 : item.TotalMilliseconds);
+        var length = TimeSpan.FromMilliseconds(item.NoExpire ? -1 : item.TotalMilliseconds);
         ImGui.SameLine();
-        ImGui.Text($"{length.Days}d {length.Hours}h {length.Minutes}m {length.Seconds}");
-
+        ImGui.Text($"{(item.NoExpire ? "Permanent" : $"{length.Days}d {length.Hours}h {length.Minutes}m {length.Seconds}s")}");
         CkGui.ColorText("Category:", ImGuiColors.ParsedGold);
         ImGui.SameLine();
         ImGui.Text(item.Type.ToString());
@@ -488,7 +487,7 @@ public static class Utils
 
     public static SeString ParseBBSeString(string text, bool nullTerminator = true)
         => ParseBBSeString(text, out _, nullTerminator);
-    
+
     public static SeString ParseBBSeString(string text, out bool hadError, bool nullTerminator = true)
     {
         hadError = false;
@@ -648,4 +647,3 @@ public static class Utils
         return true;
     }
 }
-
