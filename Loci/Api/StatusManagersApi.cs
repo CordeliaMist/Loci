@@ -21,7 +21,6 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
         _helpers = helpers;
         _manager = manager;
 
-        Mediator.Subscribe<ActorSMOwnerChanged>(this, _ => OnManagerOwnerChanged(_.Address));
         Mediator.Subscribe<ActorSMChanged>(this, _ => OnManagerChanged(_.Address));
         Mediator.Subscribe<ActorSMStatusesChanged>(this, _ => OnManagerStatusesChanged(_.Address, _.StatusId, _.Change));
         Mediator.Subscribe<ApplyToTargetMessage>(this, _ => OnApplyToTarget(_.TargetAddress, _.TargetHost, _.Data));

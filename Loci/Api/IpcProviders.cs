@@ -1,4 +1,3 @@
-using Dalamud.Plugin;
 using LociApi.Api;
 using LociApi.Helpers;
 using LociApi.Ipc;
@@ -52,7 +51,6 @@ public class IpcProviders : IDisposable
             ClearManagerByName.Provider(Svc.PluginInterface, api.StatusManager),
             ConvertLegacyData.Provider(Svc.PluginInterface, api.StatusManager),
 
-            ManagerOwnerChanged.Provider(Svc.PluginInterface, api.StatusManager),
             ManagerChanged.Provider(Svc.PluginInterface, api.StatusManager),
             ManagerStatusesChanged.Provider(Svc.PluginInterface, api.StatusManager),
             ApplyToTargetSent.Provider(Svc.PluginInterface, api.StatusManager),

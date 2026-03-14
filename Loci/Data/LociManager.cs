@@ -131,8 +131,8 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             ClientSM = actorSM;
             ClientSM.Owner = PlayerData.Character;
         }
-        // ActorSM Address changed, so invoke mediator.
-        Mediator.Publish(new ActorSMOwnerChanged((nint)chara));
+        // Invoke that the manager changed on render to help DataSyncs detect initial display.
+        actorSM.NeedFireEvent = true;
     }
 
     private unsafe void MarkUnrendered(ActorSM actorSM, Character* chara)
@@ -147,9 +147,6 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             _managers.Remove(actorSM.Identifier);
             Logger.LogDebug($"Removed {actorSM.Identifier} because it was unrendered with 0 statuses and non-ephemeral", LoggerType.Data);
         }
-
-        // ActorSM Address changed, so invoke mediator.
-        Mediator.Publish(new ActorSMOwnerChanged((nint)chara));
     }
 
     private unsafe ActorSM AddManager(Character* chara, string nameKey, bool isClient = false)
@@ -165,8 +162,9 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
         Logger.LogTrace($"Created and Assigned {{{nameKey}}} to a new LociSM", LoggerType.Data);
         if (isClient)
             ClientSM = newSM;
-        // ActorSM Address changed, so invoke mediator.
-        Mediator.Publish(new ActorSMOwnerChanged((nint)chara));
+
+        // Invoke that the manager changed on render to help DataSyncs detect initial display.
+        newSM.NeedFireEvent = true;
         // return the created manager.
         return newSM;
     }
@@ -194,12 +192,16 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
 
         // If it exists, update it to visible
         if (_managers.TryGetValue(nameKey, out var existingSM))
+        {
             MarkRendered(existingSM, chara);
+            Mediator.Publish(new FolderUpdateManagers());
+        }
         // Otherwise, create a new manager if the nameKey is valid
         else if (!string.IsNullOrEmpty(nameKey))
+        {
             AddManager(chara, nameKey);
-
-        Mediator.Publish(new FolderUpdateManagers());
+            Mediator.Publish(new FolderUpdateManagers());
+        }
     }
 
     private unsafe void OnObjectDeleted(IntPtr address)
@@ -215,7 +217,10 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
 
         // Otherwise, see if it exists, and if it does, we need to remove it.
         if (_managers.TryGetValue(nameKey, out var lociSM))
+        {
             MarkUnrendered(lociSM, chara);
+            Mediator.Publish(new FolderUpdateManagers());
+        }
     }
 
     // Should no longer be needed, but also breaks current stuff.
@@ -246,8 +251,11 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
         // Try pulling from the list of managers, even ones that are not rendered.
         // This allows them to be properly synced and updated.
         if (!_managers.TryGetValue(nameKey, out var manager) && create)
+        {
             manager = AddManager(chara, nameKey);
-
+            Mediator.Publish(new FolderUpdateManagers());
+        }
+        
         return manager!;
     }
     public void Save()

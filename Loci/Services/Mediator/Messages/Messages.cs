@@ -36,7 +36,6 @@ public record ReloadCKFS(LociModule Module) : MessageBase;
 public record NewEnabledStateMessage(bool NewState) : SameThreadMessage;
 
 // StatusManager
-public record ActorSMOwnerChanged(IntPtr Address) : SameThreadMessage;
 public record ActorSMChanged(IntPtr Address) : SameThreadMessage;
 public record ActorSMStatusesChanged(IntPtr Address, Guid StatusId, StatusChangeType Change) : SameThreadMessage;
 public record ApplyToTargetMessage(IntPtr TargetAddress, string TargetHost, List<LociStatusInfo> Data) : SameThreadMessage;

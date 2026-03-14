@@ -5,6 +5,7 @@ using Loci.Data;
 using Loci.Services;
 using Loci.Services.Mediator;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using LociApi.Ipc;
 
 namespace Loci.DrawSystem;
 
@@ -83,18 +84,23 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
     protected override bool EnsureAllFolders(Dictionary<string, string> _)
     {
         bool anyChanged = false;
+#if DEBUG
+        Func<IEnumerable<ActorSM>> source = () => LociManager.Managers.Values;
+#else
+        Func<IEnumerable<ActorSM>> source = () => LociManager.Rendered.Values;
+#endif
         // Players
         if (!FolderMap.ContainsKey(PLAYER_TAG))
             anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PLAYER_TAG, CkCol.TriStateCheck.Uint(),
-                () => [.. LociManager.Managers.Where(x => x.Value.ActorKind is ObjectKind.Pc).Select(x => x.Value)], GetDefaultSorter()));
+                () => [.. source().Where(x => x.ActorKind is ObjectKind.Pc)], GetDefaultSorter()));
         // Minions
         if (!FolderMap.ContainsKey(MINION_TAG))
             anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, MINION_TAG, CkCol.TriStateCheck.Uint(),
-                () => [.. LociManager.Managers.Where(x => x.Value.ActorKind is ObjectKind.Companion).Select(x => x.Value)], GetDefaultSorter()));
+                () => [.. source().Where(x => x.ActorKind is ObjectKind.Companion)], GetDefaultSorter()));
         // Pets (Not working atm, maybe later?)
         if (!FolderMap.ContainsKey(PET_TAG))
             anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PET_TAG, CkCol.TriStateCheck.Uint(),
-                () => [.. LociManager.Managers.Where(x => x.Value.ActorKind is ObjectKind.BattleNpc).Select(x => x.Value)], GetDefaultSorter()));
+                () => [.. source().Where(x => x.ActorKind is ObjectKind.BattleNpc)], GetDefaultSorter()));
         // Ensure show empty is false
         SetShowIfEmptyState(PLAYER_TAG, false);
         SetShowIfEmptyState(MINION_TAG, false);
