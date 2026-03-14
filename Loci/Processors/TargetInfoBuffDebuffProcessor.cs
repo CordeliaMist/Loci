@@ -12,12 +12,14 @@ public unsafe class TargetInfoBuffDebuffProcessor
 {
     private readonly ILogger<TargetInfoBuffDebuffProcessor> _logger;
     private readonly MainConfig _config;
+    private readonly LociManager _manager;
 
     public int NumStatuses = 0;
-    public TargetInfoBuffDebuffProcessor(ILogger<TargetInfoBuffDebuffProcessor> logger, MainConfig config)
+    public TargetInfoBuffDebuffProcessor(ILogger<TargetInfoBuffDebuffProcessor> logger, MainConfig config, LociManager manager)
     {
         _logger = logger;
         _config = config;
+        _manager = manager;
 
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "_TargetInfoBuffDebuff", OnTargetInfoBuffDebuffUpdate);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "_TargetInfoBuffDebuff", OnPreRequestedUpdate);
@@ -111,7 +113,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
             return;
 
         // Update the statuses
-        var sm = LociManager.GetFromChara((Character*)target);
+        var sm = _manager.GetOrCreateSM((Character*)target);
         // If a companion, force visibility
         if (target->ObjectKind is ObjectKind.Companion)
         {

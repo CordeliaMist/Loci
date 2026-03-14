@@ -4,6 +4,7 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Loci.Data;
 
@@ -13,12 +14,15 @@ public unsafe class TargetInfoProcessor
 {
     private readonly ILogger<TargetInfoProcessor> _logger;
     private readonly MainConfig _config;
+    private readonly LociManager _manager;
 
     public int NumStatuses = 0;
-    public TargetInfoProcessor(ILogger<TargetInfoProcessor> logger, MainConfig config)
+    public TargetInfoProcessor(ILogger<TargetInfoProcessor> logger, MainConfig config, LociManager manager)
     {
         _logger = logger;
         _config = config;
+        _manager = manager;
+
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PreUpdate, "_TargetInfo", OnTargetInfoUpdate);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "_TargetInfo", OnPreRequestedUpdate);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "_TargetInfo", OnPostRequestedUpdate);
@@ -114,7 +118,7 @@ public unsafe class TargetInfoProcessor
         if (hideAll)
             return;
 
-        var sm = LociManager.GetFromChara((Character*)target);
+        var sm = _manager.GetOrCreateSM((Character*)target);
         // If a companion, force visibility
         if (target->ObjectKind is ObjectKind.Companion)
         {

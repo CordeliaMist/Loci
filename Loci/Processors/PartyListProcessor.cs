@@ -2,6 +2,7 @@
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Loci.Data;
 using LociApi.Enums;
@@ -11,12 +12,14 @@ public unsafe class PartyListProcessor : IDisposable
 {
     private readonly ILogger<PartyListProcessor> _logger;
     private readonly MainConfig _config;
+    private readonly LociManager _manager;
 
     private int[] NumStatuses = [0, 0, 0, 0, 0, 0, 0, 0];
-    public PartyListProcessor(ILogger<PartyListProcessor> logger, MainConfig config)
+    public PartyListProcessor(ILogger<PartyListProcessor> logger, MainConfig config, LociManager manager)
     {
         _logger = logger;
         _config = config;
+        _manager = manager;
 
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "_PartyList", OnPartyListUpdate);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, "_PartyList", OnAlcPartyListRequestedUpdate);
@@ -117,7 +120,7 @@ public unsafe class PartyListProcessor : IDisposable
 
             // Otherwise, update the statuses
             var curIndex = NumStatuses[n];
-            var sm = LociManager.GetFromChara((Character*)player);
+            var sm = _manager.GetOrCreateSM((Character*)player);
             // _logger.LogTrace($"Found SM for idx {curIndex}, with iconArray length of {iconArray.Length} with {sm.Statuses.Count} statuses.");
             foreach (var status in sm.Statuses)
             {

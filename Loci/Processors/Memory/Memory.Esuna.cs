@@ -35,7 +35,7 @@ public unsafe partial class LociMemory
                         if (_config.Current.OthersCanEsuna || chara->ObjectIndex == 0)
                         {
                             // Grab the status manager. (Do not trigger on Ephemeral, wait for them to update via IPC)
-                            if (LociManager.GetFromChara(targetChara) is { } manager && !manager.Ephemeral)
+                            if (_manager.GetOrCreateSM(targetChara) is { } manager && !manager.Ephemeral)
                             {
                                 bool fromClient = chara->ObjectIndex == 0;
 

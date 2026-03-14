@@ -1,6 +1,7 @@
 ﻿using CkCommons;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Loci.Data;
 
@@ -35,7 +36,7 @@ public unsafe class StatusProcessor : IDisposable
             return;
 
         if(AddonHelp.TryGetAddonByName<AtkUnitBase>("_Status", out var addon) && AddonHelp.IsAddonReady(addon))
-            UpdateStatus(addon, LociManager.GetFromChara(PlayerData.Character), NumStatuses, true);
+            UpdateStatus(addon, LociManager.ClientSM, NumStatuses, true);
     }
 
     // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage 
@@ -48,7 +49,7 @@ public unsafe class StatusProcessor : IDisposable
         if(!_config.CanLociModifyUI())
             return;
 
-        UpdateStatus((AtkUnitBase*)args.Addon.Address, LociManager.GetFromChara(PlayerData.Character), NumStatuses);
+        UpdateStatus((AtkUnitBase*)args.Addon.Address, LociManager.ClientSM, NumStatuses);
     }
 
     private void AddonRequestedUpdate(AtkUnitBase* addonBase)

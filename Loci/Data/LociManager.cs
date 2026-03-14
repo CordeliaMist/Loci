@@ -131,6 +131,8 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             ClientSM = actorSM;
             ClientSM.Owner = PlayerData.Character;
         }
+        // ActorSM Address changed, so invoke mediator.
+        Mediator.Publish(new ActorSMOwnerChanged((nint)chara));
     }
 
     private unsafe void MarkUnrendered(ActorSM actorSM, Character* chara)
@@ -146,11 +148,11 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             Logger.LogDebug($"Removed {actorSM.Identifier} because it was unrendered with 0 statuses and non-ephemeral", LoggerType.Data);
         }
 
-        // Fire regardless
-        Mediator.Publish(new FolderUpdateManagers());
+        // ActorSM Address changed, so invoke mediator.
+        Mediator.Publish(new ActorSMOwnerChanged((nint)chara));
     }
 
-    private unsafe void AddManager(Character* chara, string nameKey, bool isClient = false)
+    private unsafe ActorSM AddManager(Character* chara, string nameKey, bool isClient = false)
     {
         var newSM = new ActorSM()
         {
@@ -163,6 +165,10 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
         Logger.LogTrace($"Created and Assigned {{{nameKey}}} to a new LociSM", LoggerType.Data);
         if (isClient)
             ClientSM = newSM;
+        // ActorSM Address changed, so invoke mediator.
+        Mediator.Publish(new ActorSMOwnerChanged((nint)chara));
+        // return the created manager.
+        return newSM;
     }
 
     private unsafe void InitClientSM()
@@ -212,43 +218,36 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             MarkUnrendered(lociSM, chara);
     }
 
-    public unsafe static ActorSM GetFromName(string nameKey, bool create = true)
-    {
-        if (!_managers.TryGetValue(nameKey, out var manager))
-        {
-            if (create)
-            {
-                manager = new();
-                // Add it to the dictionary.
-                _managers.TryAdd(nameKey, manager);
-                // If we can identify the player from the object watcher, we should set it in the manager.
-                if (CharaWatcher.TryGetFirstUnsafe(x => Utils.ToLociName(x) == nameKey, out var chara))
-                {
-                    manager.ActorKind = chara->ObjectKind;
-                    manager.Identifier = nameKey;
-                    manager.Owner = chara;
-                }
-            }
-        }
-        return manager!;
-    }
+    // Should no longer be needed, but also breaks current stuff.
+    //public unsafe ActorSM GetFromName(string nameKey, bool create = true)
+    //{
+    //    if (!_managers.TryGetValue(nameKey, out var manager))
+    //    {
+    //        if (create)
+    //        {
+    //            manager = new();
+    //            // Add it to the dictionary.
+    //            _managers.TryAdd(nameKey, manager);
+    //            // If we can identify the player from the object watcher, we should set it in the manager.
+    //            if (CharaWatcher.TryGetFirstUnsafe(x => Utils.ToLociName(x) == nameKey, out var chara))
+    //            {
+    //                manager.ActorKind = chara->ObjectKind;
+    //                manager.Identifier = nameKey;
+    //                manager.Owner = chara;
+    //            }
+    //        }
+    //    }
+    //    return manager!;
+    //}
 
-    public unsafe static ActorSM GetFromChara(Character* chara, bool create = true)
+    public unsafe ActorSM GetOrCreateSM(Character* chara, bool create = true)
     {
         var nameKey = Utils.ToLociName(chara);
-        if (!_managers.TryGetValue(nameKey, out var manager))
-        {
-            if (create)
-            {
-                manager = new()
-                {
-                    ActorKind = chara->ObjectKind,
-                    Identifier = nameKey,
-                    Owner = chara,
-                };
-                _managers.TryAdd(nameKey, manager);
-            }
-        }
+        // Try pulling from the list of managers, even ones that are not rendered.
+        // This allows them to be properly synced and updated.
+        if (!_managers.TryGetValue(nameKey, out var manager) && create)
+            manager = AddManager(chara, nameKey);
+
         return manager!;
     }
     public void Save()

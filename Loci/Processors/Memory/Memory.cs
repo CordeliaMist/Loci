@@ -24,12 +24,15 @@ public unsafe partial class LociMemory : IHostedService
     private readonly LociMediator _mediator;
     private readonly MainConfig _config;
     private readonly LociEventData _eventData;
-    public LociMemory(ILogger<LociMemory> logger, LociMediator mediator, MainConfig config, LociEventData eventData)
+    private readonly LociManager _manager;
+    public LociMemory(ILogger<LociMemory> logger, LociMediator mediator, MainConfig config,
+        LociEventData eventData, LociManager manager)
     {
         _logger = logger;
         _mediator = mediator;
         _config = config;
         _eventData = eventData;
+        _manager = manager;
 
         logger.LogInformation("Initializing Memory");
         Svc.Hook.InitializeFromAttributes(this);

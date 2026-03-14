@@ -12,6 +12,8 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
     private readonly ApiHelpers _helpers;
     private readonly LociManager _manager;
 
+    // Internal static events to call across classes in static methods where needed.
+
     public StatusManagerApi(ILogger<StatusManagerApi> logger, LociMediator mediator,
         ApiHelpers helpers, LociManager manager) 
         : base(logger, mediator)
@@ -19,6 +21,7 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
         _helpers = helpers;
         _manager = manager;
 
+        Mediator.Subscribe<ActorSMOwnerChanged>(this, _ => OnManagerOwnerChanged(_.Address));
         Mediator.Subscribe<ActorSMChanged>(this, _ => OnManagerChanged(_.Address));
         Mediator.Subscribe<ActorSMStatusesChanged>(this, _ => OnManagerStatusesChanged(_.Address, _.StatusId, _.Change));
         Mediator.Subscribe<ApplyToTargetMessage>(this, _ => OnApplyToTarget(_.TargetAddress, _.TargetHost, _.Data));
@@ -161,6 +164,9 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
     public string ConvertLegacyData(string base64Data)
         => _helpers.ConvertLegacyData(base64Data);
 
+    private void OnManagerOwnerChanged(nint address)
+        => ManagerOwnerChanged?.Invoke(address);
+
     private void OnManagerChanged(nint address)
         => ManagerChanged?.Invoke(address);
 
@@ -170,20 +176,12 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
     private void OnApplyToTarget(nint targetAddr, string targetHost, List<LociStatusInfo> data)
         => ApplyToTargetSent?.Invoke(targetAddr, targetHost, data);
 
-    /// <summary>
-    ///   Triggers when an actors StatusManager updates in any way.
-    /// </summary>
+
+    public event Action<nint> ManagerOwnerChanged;
+
     public event Action<nint> ManagerChanged;
 
-    /// <summary>
-    ///   Triggers when the statuses of a StatusManager are updated in any way.
-    /// </summary>
     public event ManagerStatusesChangedDelegate? ManagerStatusesChanged;
 
-    /// <summary>
-    ///   Triggered when ApplyToTarget in the Status or 
-    ///   Preset tab of Loci is used on a target that is Ephemeral.
-    /// </summary>
-    /// <remarks> This does not fire if applied to a non-ephemeral target. </remarks>
     public event ApplyToTargetDelegate? ApplyToTargetSent;
 }

@@ -11,6 +11,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using Loci.Combos;
 using Loci.Data;
 using Loci.DrawSystem;
@@ -27,7 +28,7 @@ public class StatusesTab : IDisposable
     private readonly LociMediator _mediator;
     private readonly StatusSelector _selector;
     private readonly LociData _data;
-    private readonly LociManager _loci;
+    private readonly LociManager _manager;
 
     private IconDataSelector _iconSelector;
     private SavedStatusesCombo _ownStatusCombo;
@@ -39,7 +40,7 @@ public class StatusesTab : IDisposable
         _mediator = mediator;
         _selector = selector;
         _data = data;
-        _loci = loci;
+        _manager = loci;
         _iconSelector = new IconDataSelector(favorites);
         _ownStatusCombo = new SavedStatusesCombo(logger, loci, () => [ .. LociData.Statuses.OrderBy(s => s.Title) ]);
         _ownPresetsCombo = new SavedPresetsCombo(logger, loci, () => [ .. LociData.Presets.OrderBy(p => p.Title) ]);
@@ -98,7 +99,7 @@ public class StatusesTab : IDisposable
 
         // Do some fancy way of displaying the LociStatus later.
         if (ImGui.Button("Apply"))
-            LociManager.GetFromName(PlayerData.NameWithWorld).AddOrUpdate(status.PreApply());
+            LociManager.ClientSM.AddOrUpdate(status.PreApply());
 
         CkGui.FrameSeparatorV();
         DrawTargetApplication(status);
@@ -136,7 +137,7 @@ public class StatusesTab : IDisposable
         }
 
         // We have a target, so get their sm
-        var sm = LociManager.GetFromChara(chara);
+        var sm = _manager.GetOrCreateSM(chara);
         // If the manager is not ephemeral, simply draw the apply to target button.
         if (!sm.Ephemeral)
         {

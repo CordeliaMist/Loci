@@ -14,14 +14,17 @@ public unsafe class FocusTargetInfoProcessor
     private readonly ILogger<FocusTargetInfoProcessor> _logger;
     private readonly MainConfig _config;
     private readonly LociMemory _memory;
+    private readonly LociManager _manager;
 
     private int NumStatuses = 0;
 
-    public FocusTargetInfoProcessor(ILogger<FocusTargetInfoProcessor> logger, MainConfig config, LociMemory memory)
+    public FocusTargetInfoProcessor(ILogger<FocusTargetInfoProcessor> logger, MainConfig config,
+        LociMemory memory, LociManager manager)
     {
         _logger = logger;
         _config = config;
         _memory = memory;
+        _manager = manager;
 
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "_FocusTargetInfo", OnFocusTargetInfoUpdate);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, "_FocusTargetInfo", OnPreRequestedUpdate);
@@ -111,7 +114,7 @@ public unsafe class FocusTargetInfoProcessor
             return;
 
         // Update the displays.
-        var sm = LociManager.GetFromChara((Character*)target);
+        var sm = _manager.GetOrCreateSM((Character*)target);
         // If a companion, force visibility
         if (target->ObjectKind is ObjectKind.Companion)
         {

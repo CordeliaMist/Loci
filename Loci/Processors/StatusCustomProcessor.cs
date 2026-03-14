@@ -1,6 +1,7 @@
 ﻿using CkCommons;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Loci.Data;
 using LociApi.Enums;
@@ -10,6 +11,7 @@ public unsafe class StatusCustomProcessor : IDisposable
 {
     private readonly ILogger<StatusCustomProcessor> _logger;
     private readonly MainConfig _config;
+    private readonly LociManager _manager;
 
     public int NumStatuses0 = 0;
     public int NumStatuses1 = 0;
@@ -18,10 +20,11 @@ public unsafe class StatusCustomProcessor : IDisposable
     int lastStatusCount = 0;
     bool statusCountLessened = false;
 
-    public StatusCustomProcessor(ILogger<StatusCustomProcessor> logger, MainConfig config)
+    public StatusCustomProcessor(ILogger<StatusCustomProcessor> logger, MainConfig config, LociManager manager)
     {
         _logger = logger;
         _config = config;
+        _manager = manager;
 
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "_StatusCustom0", OnStatusCustom0Update);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostUpdate, "_StatusCustom1", OnStatusCustom1Update);
@@ -59,21 +62,21 @@ public unsafe class StatusCustomProcessor : IDisposable
         
         if(AddonHelp.TryGetAddonByName<AtkUnitBase>("_StatusCustom0", out var addon0) && AddonHelp.IsAddonReady(addon0))
         {
-            var sm = LociManager.GetFromChara(PlayerData.Character);
+            var sm = _manager.GetOrCreateSM(PlayerData.Character);
             var validStatuses = sm.Statuses.Where(x => x.Type == StatusType.Positive);
             UpdateStatusCustom(addon0, sm, validStatuses, LociProcessor.PositiveStatuses, NumStatuses0, true);
         }
 
         if(AddonHelp.TryGetAddonByName<AtkUnitBase>("_StatusCustom1", out var addon1) && AddonHelp.IsAddonReady(addon1))
         {
-            var sm = LociManager.GetFromChara(PlayerData.Character);
+            var sm = _manager.GetOrCreateSM(PlayerData.Character);
             var validStatuses = sm.Statuses.Where(x => x.Type == StatusType.Negative);
             UpdateStatusCustom(addon1, sm, validStatuses, LociProcessor.NegativeStatuses, NumStatuses1, true);
         }
 
         if(AddonHelp.TryGetAddonByName<AtkUnitBase>("_StatusCustom2", out var addon2) && AddonHelp.IsAddonReady(addon2))
         {
-            var sm = LociManager.GetFromChara(PlayerData.Character);
+            var sm = _manager.GetOrCreateSM(PlayerData.Character);
             var validStatuses = sm.Statuses.Where(x => x.Type == StatusType.Special);
             UpdateStatusCustom(addon2, sm, validStatuses, LociProcessor.SpecialStatuses, NumStatuses2, true);
         }
@@ -135,7 +138,7 @@ public unsafe class StatusCustomProcessor : IDisposable
         if(!_config.CanLociModifyUI())
             return;
         //PluginLog.Verbose($"Post1 update {args.Addon:X16}");
-        var sm = LociManager.GetFromChara(PlayerData.Character);
+        var sm = _manager.GetOrCreateSM(PlayerData.Character);
         var validStatuses = sm.Statuses.Where(x => x.Type == StatusType.Special);
         UpdateStatusCustom((AtkUnitBase*)args.Addon.Address, sm, validStatuses, LociProcessor.SpecialStatuses, NumStatuses2);
     }
@@ -148,7 +151,7 @@ public unsafe class StatusCustomProcessor : IDisposable
         if (!_config.CanLociModifyUI())
             return;
         //PluginLog.Verbose($"Post1 update {args.Addon:X16}");
-        var sm = LociManager.GetFromChara(PlayerData.Character);
+        var sm = _manager.GetOrCreateSM(PlayerData.Character);
         var validStatuses = sm.Statuses.Where(x => x.Type == StatusType.Negative);
         UpdateStatusCustom((AtkUnitBase*)args.Addon.Address, sm, validStatuses, LociProcessor.NegativeStatuses, NumStatuses1);
     }
@@ -161,7 +164,7 @@ public unsafe class StatusCustomProcessor : IDisposable
         if (!_config.CanLociModifyUI())
             return;
         //PluginLog.Verbose($"Post0 update {args.Addon:X16}");
-        var sm = LociManager.GetFromChara(PlayerData.Character);
+        var sm = _manager.GetOrCreateSM(PlayerData.Character);
         var validStatuses = sm.Statuses.Where(x => x.Type == StatusType.Positive);
         UpdateStatusCustom((AtkUnitBase*)args.Addon.Address, sm, validStatuses, LociProcessor.PositiveStatuses, NumStatuses0);
     }

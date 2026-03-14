@@ -97,7 +97,7 @@ public class PresetsTab : IDisposable
 
         // Do some fancy way of displaying the LociStatus later.
         if (ImGui.Button("Apply"))
-            LociManager.GetFromName(PlayerData.NameWithWorld).ApplyPreset(preset);
+            LociManager.ClientSM.ApplyPreset(preset);
         CkGui.FrameSeparatorV();
         DrawTargetApplication(preset);
 
@@ -320,7 +320,7 @@ public class PresetsTab : IDisposable
         }
 
         // We have a target, so get their sm
-        var sm = LociManager.GetFromChara(chara);
+        var sm = _manager.GetOrCreateSM(chara);
         // If the manager is not ephemeral, simply draw the apply to target button.
         if (!sm.Ephemeral)
         {
