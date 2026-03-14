@@ -31,6 +31,23 @@ public class ApiHelpers(StatusesFS statusFS, PresetsFS presetFS, LociEventsFS ev
         return sm.EphemeralHosts.Remove(identifier) ? LociApiEc.Success : LociApiEc.NoChange;
     }
 
+    public int ClearActorSM(ActorSM sm)
+    {
+        int removed = 0;
+        foreach (var s in sm.Statuses.ToList())
+        {
+            if (sm.LockedStatuses.ContainsKey(s.GUID))
+                continue;
+
+            if (!s.Persistent)
+            {
+                sm.Cancel(s);
+                removed++;
+            }
+        }
+        return removed;
+    }
+
     public LociStatusSummary ToSavedStatusSummary(LociStatus s)
     {
         var foundPath = statusFS.FindLeaf(s, out var path) ? path.FullName() : string.Empty;

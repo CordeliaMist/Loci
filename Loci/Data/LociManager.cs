@@ -245,6 +245,24 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
     //    return manager!;
     //}
 
+    // Called usually after unregistering an invalid ephemeral.
+    public bool RemoveIfStale(ActorSM staleSM)
+    {
+        // Safeguard
+        if (staleSM == ClientSM || staleSM.OwnerValid)
+            return false;
+
+        // Remove and update
+        if (_managers.Remove(staleSM.Identifier, out var removed))
+        {
+            Logger.LogDebug($"Removed Stale manager {removed.Identifier}", LoggerType.DataManagement);
+            Mediator.Publish(new FolderUpdateManagers());
+            return true;
+        }
+
+        return false;
+    }
+
     public unsafe ActorSM GetOrCreateSM(Character* chara, bool create = true)
     {
         var nameKey = Utils.ToLociName(chara);

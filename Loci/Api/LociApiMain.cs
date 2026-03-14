@@ -15,7 +15,7 @@ public class LociApiMain : DisposableMediatorSubscriberBase, ILociApi
 
     // Our API Version, exposed to other plugins for compatibility checking.
     public const int VERSION_MAJOR = 1;
-    public const int VERSION_MINOR = 0;
+    public const int VERSION_MINOR = 1;
 
     public LociApiMain(
         ILogger<LociApiMain> logger,
