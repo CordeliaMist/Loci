@@ -361,21 +361,33 @@ public class ActorSM
     {
         try
         {
+            var updated = 0;
             foreach (var x in Statuses)
+            {
                 if (!newStatusList.Any(n => n.GUID == x.GUID))
+                {
                     x.ExpiresAt = 0;
+                    updated++;
+                }
+            }
             // Update the rest of the statuses.
             foreach (var x in newStatusList)
+            {
                 if (x.ExpiresAt > Utils.Time)
+                {
                     AddOrUpdateDataStringStatus(x);
+                    updated++;
+                }
+            }
+            // If any updated, mark as dirty
+            if (updated > 0)
+                DirtyChanges |= ManagerChangeType.DataString;
         }
         catch (Bagagwa e)
         {
             Svc.Logger.Warning($"Error applying statuses as ephemeral: {e.Message}");
         }
     }
-
-
 
     public static string HexDump(ReadOnlySpan<byte> data, int bytesPerLine = 16)
     {
