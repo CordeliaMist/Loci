@@ -154,7 +154,7 @@ public class LociEventsTab : IDisposable
     {
         using var _ = ImRaii.Table("event-main", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame);
         if (!_) return;
-        
+
         ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthFixed, leftW);
         ImGui.TableSetupColumn("Field", ImGuiTableColumnFlags.WidthStretch);
 
@@ -180,7 +180,7 @@ public class LociEventsTab : IDisposable
                 _data.RenameEvent(sel, _tmpTitle);
             _tmpTitle = null;
         }
-        
+
         ImGui.SameLine();
         CkGui.RightFrameAlignedColor($"{sel.Title.Length}/150", ImGuiColors.DalamudGrey2.ToUint(), ImUtf8.ItemSpacing.X);
 
@@ -384,7 +384,7 @@ public class LociEventsTab : IDisposable
 
         ImGui.TableNextColumn();
         CkGui.TextFrameAligned("Detect Emote:");
-        
+
         ImGui.TableNextColumn();
         if (sel.IndicatedID > 0 && GameDataSvc.EmoteData.TryGetValue((ushort)sel.IndicatedID, out var emoteData))
         {
@@ -403,7 +403,7 @@ public class LociEventsTab : IDisposable
             sel.IndicatedID = uint.MaxValue;
             _data.MarkEventModified(sel);
         }
-        
+
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         CkGui.TextFrameAligned("Direction:");
@@ -520,7 +520,7 @@ public class LociEventsTab : IDisposable
         if (sel.IndicatedID > 0 && GameDataSvc.OnlineStatus.TryGetValue((byte)sel.IndicatedID, out var statusData))
         {
             // Draw it out
-            var image = Svc.Texture.GetFromGameIcon(sel.IndicatedID).GetWrapOrEmpty();
+            var image = Svc.Texture.GetFromGameIcon(statusData.IconId).GetWrapOrEmpty();
             ImUtf8.SameLineInner();
             ImGui.Image(image.Handle, new(ImUtf8.FrameHeight));
             CkGui.AttachToolTip(statusData.Name);
