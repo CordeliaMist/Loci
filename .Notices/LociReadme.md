@@ -1,7 +1,7 @@
 ﻿# NOTICE:
 ***This project is not affiliated with, endorsed, or supported by Moodles.***
 
-Loci is derrived from Moodles, licensed under:
+Loci is derived from Moodles, licensed under:
 ```
 BSD 3-Clause License
 Copyright (c) 2024, Kane Valentine
