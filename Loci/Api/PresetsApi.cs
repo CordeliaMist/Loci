@@ -50,7 +50,7 @@ public class PresetApi : DisposableMediatorSubscriberBase, ILociApiPresets
             return LociApiEc.DataNotFound;
 
         // Modify the preset manager
-        LociManager.ClientSM.ApplyPreset(preset, key);
+        LociManager.ClientSM.ApplyPreset(preset, ManagerChangeType.ApplyRemove, key);
         return LociApiEc.Success;
     }
 
@@ -67,7 +67,7 @@ public class PresetApi : DisposableMediatorSubscriberBase, ILociApiPresets
                 continue;
             }
             // Update the manager
-            LociManager.ClientSM.ApplyPreset(preset, key);
+            LociManager.ClientSM.ApplyPreset(preset, ManagerChangeType.ApplyRemove, key);
         }
 
         return failed.Count == ids.Count 
@@ -78,7 +78,7 @@ public class PresetApi : DisposableMediatorSubscriberBase, ILociApiPresets
     public LociApiEc ApplyPresetInfo(LociPresetInfo presetInfo, uint key)
     {
         // If this null, we can imply it failed by either being invalid or a lock.
-        LociManager.ClientSM.ApplyPreset(presetInfo.ToSavedPreset(), key);
+        LociManager.ClientSM.ApplyPreset(presetInfo.ToSavedPreset(), ManagerChangeType.ApplyRemove, key);
         return LociApiEc.Success;
     }
 
@@ -86,7 +86,7 @@ public class PresetApi : DisposableMediatorSubscriberBase, ILociApiPresets
     {
         // No way to tell if this fails or not in any way right now, so callback is not trustworthy.
         foreach (var presetInfo in presetInfos)
-            LociManager.ClientSM.ApplyPreset(presetInfo.ToSavedPreset(), key);
+            LociManager.ClientSM.ApplyPreset(presetInfo.ToSavedPreset(), ManagerChangeType.ApplyRemove, key);
 
         return LociApiEc.Success;
     }
@@ -102,7 +102,7 @@ public class PresetApi : DisposableMediatorSubscriberBase, ILociApiPresets
         if (LociData.Presets.FirstOrDefault(s => s.GUID == presetId) is not { } preset)
             return LociApiEc.DataNotFound;
 
-        actorSM.ApplyPreset(preset);
+        actorSM.ApplyPreset(preset, ManagerChangeType.ApplyRemove);
         return LociApiEc.Success;
     }
 
@@ -191,7 +191,7 @@ public class PresetApi : DisposableMediatorSubscriberBase, ILociApiPresets
             return LociApiEc.DataNotFound;
 
         // No way to know if this was a success or failure, so don't assume correct callback yet.
-        LociManager.ClientSM.RemovePreset(preset, key);
+        LociManager.ClientSM.RemovePreset(preset, ManagerChangeType.ApplyRemove, key);
         return LociApiEc.Success;
     }
 

@@ -15,11 +15,9 @@ namespace Loci.Gui;
 
 public class IpcTesterStatusManagers : IIpcTesterGroup
 {
-    private readonly EventSubscriber<nint> _managerModified;
-    private readonly EventSubscriber<nint, Guid, StatusChangeType> _managerStatusesChanged;
+    private readonly EventSubscriber<nint, ManagerChangeType> _managerModified;
 
-    public nint LastAddrModified { get; private set; } = nint.Zero;
-    public (nint Addr, Guid Status, StatusChangeType Change) LastStatusChange { get; private set; } = (nint.Zero, Guid.Empty, StatusChangeType.Added);
+    public (nint Addr, ManagerChangeType ChangeType) LastManagerUpdate { get; private set; } = (nint.Zero, ManagerChangeType.NoChange);
 
     private string _actorAddrString = string.Empty;
     private nint _actorAddr = nint.Zero;
@@ -38,7 +36,6 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
         _manager = manager;
 
         _managerModified = ManagerChanged.Subscriber(Svc.PluginInterface, OnManagerModified);
-        _managerStatusesChanged = ManagerStatusesChanged.Subscriber(Svc.PluginInterface, OnManagerStatusesChanged);
     }
 
     public bool IsSubscribed { get; private set; }
@@ -46,14 +43,12 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
     public void Subscribe()
     {
         _managerModified.Enable();
-        _managerStatusesChanged.Enable();
         IsSubscribed = true;
         Svc.Logger.Information("Subscribed to Status Manager IPCs.");
     }
     public void Unsubscribe()
     {
         _managerModified.Disable();
-        _managerStatusesChanged.Disable();
         IsSubscribed = false;
         Svc.Logger.Information("Unsubscribed from Status Manager IPCs.");
     }
@@ -61,11 +56,8 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
     public void Dispose()
         => Unsubscribe();
 
-    private void OnManagerModified(nint addr)
-        => LastAddrModified = addr;
-
-    private void OnManagerStatusesChanged(nint addr, Guid statusId, StatusChangeType changeType)
-        => LastStatusChange = (addr, statusId, changeType);
+    private void OnManagerModified(nint addr, ManagerChangeType changeType)
+        => LastManagerUpdate = (addr, changeType);
 
     public unsafe void Draw()
     {
@@ -110,7 +102,7 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
         ImGui.TableNextColumn();
         CkGui.ColorText(_lastReturnCode.ToString(), ImGuiColors.DalamudYellow);
 
-        IpcTesterUI.DrawIpcRowStart("Last Modified Manager Actor", $"{LastAddrModified:X}");
+        IpcTesterUI.DrawIpcRowStart("Last Modified Manager", $"{LastManagerUpdate.Addr:X} ({LastManagerUpdate.ChangeType})");
 
         // Getters (Base64)
         IpcTesterUI.DrawIpcRowStart(GetManager.Label, "Get Own Manager");

@@ -99,7 +99,7 @@ public class StatusesTab : IDisposable
 
         // Do some fancy way of displaying the LociStatus later.
         if (ImGui.Button("Apply"))
-            LociManager.ClientSM.AddOrUpdate(status.PreApply());
+            LociManager.ClientSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove);
 
         CkGui.FrameSeparatorV();
         DrawTargetApplication(status);
@@ -143,7 +143,7 @@ public class StatusesTab : IDisposable
         {
             // Perform without any validation
             if (CkGui.IconTextButton(FAI.Crosshairs, $"Apply to {chara->NameString}", disabled: chara->ObjectKind is not (ObjectKind.Pc or ObjectKind.Companion)))
-                sm.AddOrUpdate(status.PreApply());
+                sm.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove);
             CkGui.AttachToolTip($"Applies the status to the target actor!--SEP----COL--Accepts Players and Minions--COL--", ImGuiColors.DalamudOrange);
         }
         else

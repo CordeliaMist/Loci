@@ -51,7 +51,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
             return LociApiEc.DataNotFound;
 
         // Modify the status manager
-        LociManager.ClientSM.AddOrUpdate(status.PreApply(), true, true, key);
+        LociManager.ClientSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove, true, key);
         return LociApiEc.Success;
     }
 
@@ -74,7 +74,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
                 continue;
             }
             // Update the manager
-            LociManager.ClientSM.AddOrUpdate(status.PreApply(), true, true, key);
+            LociManager.ClientSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove, true, key);
         }
 
         return failed.Count == ids.Count ? LociApiEc.DataInvalid : failed.Count > 0 ? LociApiEc.PartialSuccess : LociApiEc.Success;
@@ -83,7 +83,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
     public LociApiEc ApplyStatusInfo(LociStatusInfo statusInfo, uint key)
     {
         // If this null, we can imply it failed by either being invalid or a lock.
-        if (LociManager.ClientSM.AddOrUpdate(statusInfo.ToSavedStatus().PreApply(), true, true, key) is null)
+        if (LociManager.ClientSM.AddOrUpdate(statusInfo.ToSavedStatus().PreApply(), ManagerChangeType.ApplyRemove, true, key) is null)
             return LociManager.ClientSM.LockedStatuses.ContainsKey(statusInfo.GUID) ? LociApiEc.ItemLocked : LociApiEc.DataInvalid;
 
         // Otherwise it was a valid application, so we can return success.
@@ -96,7 +96,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         foreach (var statusInfo in statusInfos)
         {
             // If this null, we can imply it failed by either being invalid or a lock.
-            if (LociManager.ClientSM.AddOrUpdate(statusInfo.ToSavedStatus().PreApply(), true, true, key) is null)
+            if (LociManager.ClientSM.AddOrUpdate(statusInfo.ToSavedStatus().PreApply(), ManagerChangeType.ApplyRemove, true, key) is null)
                 failed++;
         }
 
@@ -115,7 +115,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         if (LociData.Statuses.FirstOrDefault(s => s.GUID == statusId) is not { } status)
             return LociApiEc.DataNotFound;
 
-        actorSM.AddOrUpdate(status.PreApply());
+        actorSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove);
         return LociApiEc.Success;
     }
 
@@ -142,7 +142,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
                 failed.Add(statusId);
                 continue;
             }
-            if (actorSM.AddOrUpdate(status.PreApply()) is null)
+            if (actorSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove) is null)
             {
                 failed.Add(statusId);
                 continue;
@@ -163,7 +163,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         if (LociData.Statuses.FirstOrDefault(s => s.GUID == statusId) is not { } status)
             return LociApiEc.DataNotFound;
 
-        actorSM.AddOrUpdate(status.PreApply());
+        actorSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove);
         return LociApiEc.Success;
     }
 
@@ -190,7 +190,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
                 failed.Add(statusId);
                 continue;
             }
-            if (actorSM.AddOrUpdate(status.PreApply()) is null)
+            if (actorSM.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove) is null)
             {
                 failed.Add(statusId);
                 continue;
@@ -204,7 +204,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         if (LociManager.ClientSM.Statuses.FirstOrDefault(s => s.GUID == statusId) is not { } status)
             return LociApiEc.DataNotFound;
 
-        var res = LociManager.ClientSM.Cancel(status, true, key);
+        var res = LociManager.ClientSM.Cancel(status, ManagerChangeType.ApplyRemove, key);
         return res ? LociApiEc.Success : LociApiEc.InvalidKey;
     }
 
@@ -215,7 +215,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         foreach (var id in statusIds)
         {
             // Fail if not present, persistent, or an invalid cancel occured.
-            if (!lookup.TryGetValue(id, out var status) || status.Persistent || !LociManager.ClientSM.Cancel(id, true, key))
+            if (!lookup.TryGetValue(id, out var status) || status.Persistent || !LociManager.ClientSM.Cancel(id, ManagerChangeType.ApplyRemove, key))
                 failed.Add(id);
         }
         // Ret the failed count.
@@ -236,7 +236,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         if (status.Persistent)
             return LociApiEc.ItemIsPersistent;
 
-        return actorSM.Cancel(status) ? LociApiEc.Success : LociApiEc.ItemLocked;
+        return actorSM.Cancel(status, ManagerChangeType.ApplyRemove) ? LociApiEc.Success : LociApiEc.ItemLocked;
     }
 
     public LociApiEc RemoveStatusesByPtr(List<Guid> statusIds, nint ptr, out List<Guid> failed)
@@ -253,7 +253,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         foreach (var id in statusIds)
         {
             // Fail if not present, persistent, or an invalid cancel occured.
-            if (!lookup.TryGetValue(id, out var status) || status.Persistent || !actorSM.Cancel(id))
+            if (!lookup.TryGetValue(id, out var status) || status.Persistent || !actorSM.Cancel(id, ManagerChangeType.ApplyRemove))
                 failed.Add(id);
          }
 
@@ -277,7 +277,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         if (status.Persistent)
             return LociApiEc.ItemIsPersistent;
 
-        return actorSM.Cancel(status) ? LociApiEc.Success : LociApiEc.ItemLocked;
+        return actorSM.Cancel(status, ManagerChangeType.ApplyRemove) ? LociApiEc.Success : LociApiEc.ItemLocked;
     }
 
     public LociApiEc RemoveStatusesByName(List<Guid> statusIds, string charaName, string buddyName, out List<Guid> failed)
@@ -294,7 +294,7 @@ public class StatusApi : DisposableMediatorSubscriberBase, ILociApiStatuses
         foreach (var id in statusIds)
         {
             // Fail if not present, persistent, or an invalid cancel occured.
-            if (!lookup.TryGetValue(id, out var status) || status.Persistent || !actorSM.Cancel(id))
+            if (!lookup.TryGetValue(id, out var status) || status.Persistent || !actorSM.Cancel(id, ManagerChangeType.ApplyRemove))
                 failed.Add(id);
          }
          // Based on fail count.

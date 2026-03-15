@@ -41,7 +41,7 @@ public class ApiHelpers(StatusesFS statusFS, PresetsFS presetFS, LociEventsFS ev
 
             if (!s.Persistent)
             {
-                sm.Cancel(s);
+                sm.Cancel(s, ManagerChangeType.ApplyRemove);
                 removed++;
             }
         }

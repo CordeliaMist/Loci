@@ -16,6 +16,7 @@ using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
 using Loci.Services.Mediator;
+using LociApi.Enums;
 using OtterGui.Extensions;
 using OtterGui.Text;
 
@@ -97,7 +98,7 @@ public class PresetsTab : IDisposable
 
         // Do some fancy way of displaying the LociStatus later.
         if (ImGui.Button("Apply"))
-            LociManager.ClientSM.ApplyPreset(preset);
+            LociManager.ClientSM.ApplyPreset(preset, ManagerChangeType.ApplyRemove);
         CkGui.FrameSeparatorV();
         DrawTargetApplication(preset);
 
@@ -326,7 +327,7 @@ public class PresetsTab : IDisposable
         {
             // Perform without any validation
             if (CkGui.IconTextButton(FAI.Crosshairs, $"Apply to {chara->NameString}", disabled: chara->ObjectKind is not (ObjectKind.Pc or ObjectKind.Companion)))
-                sm.ApplyPreset(preset);
+                sm.ApplyPreset(preset, ManagerChangeType.ApplyRemove);
             CkGui.AttachToolTip($"Applies the status to the target actor!--SEP----COL--Accepts Players and Minions--COL--", ImGuiColors.DalamudOrange);
         }
         else

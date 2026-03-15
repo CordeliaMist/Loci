@@ -11,6 +11,7 @@ using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
 using Loci.Services.Mediator;
+using LociApi.Enums;
 using OtterGui.Extensions;
 using OtterGui.Text;
 using static System.ComponentModel.Design.ObjectSelectorEditor;
@@ -113,7 +114,7 @@ public class ManagersTab
                 ImGui.SameLine(ImGui.GetContentRegionAvail().X - CkGui.IconButtonSize(FAI.TimesCircle).X);
             }
             if (CkGui.IconButton(FAI.Minus, disabled: manager.Ephemeral, inPopup: true))
-                manager.Cancel(status.GUID);
+                manager.Cancel(status.GUID, ManagerChangeType.ApplyRemove);
             CkGui.AttachToolTip("Remove from manager.");
 
             if (idx > 1 && idx < manager.Statuses.Count)

@@ -21,8 +21,7 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
         _helpers = helpers;
         _manager = manager;
 
-        Mediator.Subscribe<ActorSMChanged>(this, _ => OnManagerChanged(_.Address));
-        Mediator.Subscribe<ActorSMStatusesChanged>(this, _ => OnManagerStatusesChanged(_.Address, _.StatusId, _.Change));
+        Mediator.Subscribe<ActorSMChanged>(this, _ => OnManagerChanged(_.Address, _.ChangeType));
         Mediator.Subscribe<ApplyToTargetMessage>(this, _ => OnApplyToTarget(_.TargetAddress, _.TargetHost, _.Data));
     }
 
@@ -114,7 +113,7 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
 
             if (!s.Persistent)
             {
-                LociManager.ClientSM.Cancel(s);
+                LociManager.ClientSM.Cancel(s, ManagerChangeType.ApplyRemove);
                 removed++;
             }
         }
@@ -135,7 +134,7 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
         {
             if (!s.Persistent)
             {
-                actorSM.Cancel(s);
+                actorSM.Cancel(s, ManagerChangeType.ApplyRemove);
                 removed++;
             }
         }
@@ -153,7 +152,7 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
         {
             if (!s.Persistent)
             {
-                actorSM.Cancel(s);
+                actorSM.Cancel(s, ManagerChangeType.ApplyRemove);
                 removed++;
             }
         }
@@ -163,24 +162,13 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
     public string ConvertLegacyData(string base64Data)
         => _helpers.ConvertLegacyData(base64Data);
 
-    private void OnManagerOwnerChanged(nint address)
-        => ManagerOwnerChanged?.Invoke(address);
-
-    private void OnManagerChanged(nint address)
-        => ManagerChanged?.Invoke(address);
-
-    private void OnManagerStatusesChanged(nint address, Guid statusId, StatusChangeType changeType)
-        => ManagerStatusesChanged?.Invoke(address, statusId, changeType);
+    private void OnManagerChanged(nint address, ManagerChangeType changeType)
+        => ManagerChanged?.Invoke(address, changeType);
 
     private void OnApplyToTarget(nint targetAddr, string targetHost, List<LociStatusInfo> data)
         => ApplyToTargetSent?.Invoke(targetAddr, targetHost, data);
 
-
-    public event Action<nint> ManagerOwnerChanged;
-
-    public event Action<nint> ManagerChanged;
-
-    public event ManagerStatusesChangedDelegate? ManagerStatusesChanged;
+    public event Action<nint, ManagerChangeType> ManagerChanged;
 
     public event ApplyToTargetDelegate? ApplyToTargetSent;
 }

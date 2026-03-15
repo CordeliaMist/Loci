@@ -211,7 +211,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
             // (This allows for chains to be applied without removing original if desired)
             if (removed.Count > 0)
                 foreach (var status in removed)
-                    sm.Remove(status);
+                    sm.Remove(status, ManagerChangeType.ApplyRemove);
 
             // Handle any status chaining logic.
             if (doChainApply.Count > 0)
@@ -222,16 +222,17 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
             if (removed.Count > 0 || doChainApply.Count > 0)
                 HandleSHECandidates();
 
-            // Handle event firing.
-            if (sm.NeedFireEvent)
+            // if the manager is dirty, we should invoke its event
+            if (sm.NeedInvokeChangeEvent)
             {
-                sm.NeedFireEvent = false;
+                var changes = sm.DirtyChanges;
+                sm.DirtyChanges = ManagerChangeType.NoChange;
                 // If the status manager owner exists, we can mark them as modified.
                 if (sm.Owner is not null)
                 {
                     try
                     {
-                        Mediator.Publish(new ActorSMChanged((nint)sm.Owner));
+                        Mediator.Publish(new ActorSMChanged((nint)sm.Owner, changes));
                     }
                     catch (Bagagwa e)
                     {
@@ -331,14 +332,14 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
             return;
 
         // Get old max stacks
-        int oldMax = IconStackCounts.TryGetValue((uint)cur.IconID, out var oCount) ? (int)oCount : 1;
+        int oldMax = IconStackCounts.TryGetValue(cur.IconID, out var oCount) ? (int)oCount : 1;
         // Aquire the new chained status to be applied.
-        LociStatus? newStatus = manager.AddOrUpdate(status.PreApply());
+        LociStatus? newStatus = manager.AddOrUpdate(status.PreApply(), ManagerChangeType.Chained);
         // If the new status if not valid just fail this process.
         if (newStatus is null)
             return;
         // Get the new max stacks, and if stackable, transfer stack logic.
-        int newMaxStacks = IconStackCounts.TryGetValue((uint)newStatus.IconID, out var nCount) ? (int)nCount : 1;
+        int newMaxStacks = IconStackCounts.TryGetValue(newStatus.IconID, out var nCount) ? (int)nCount : 1;
         if (newMaxStacks > 1)
         {
             if (cur.Modifiers.Has(Modifiers.StacksCarryToChain))
@@ -371,7 +372,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
         // Get old max stacks
         int oldMax = IconStackCounts.TryGetValue((uint)cur.IconID, out var oCount) ? (int)oCount : 1;
         // Apply the new preset
-        manager.ApplyPreset(preset);
+        manager.ApplyPreset(preset, ManagerChangeType.Chained);
 
         // Dont worry about rolling stacks over since we dont really control that here.
 

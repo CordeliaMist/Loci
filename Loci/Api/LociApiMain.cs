@@ -14,7 +14,7 @@ public class LociApiMain : DisposableMediatorSubscriberBase, ILociApi
     private readonly EventApi _events;
 
     // Our API Version, exposed to other plugins for compatibility checking.
-    public const int VERSION_MAJOR = 1;
+    public const int VERSION_MAJOR = 2;
     public const int VERSION_MINOR = 1;
 
     public LociApiMain(

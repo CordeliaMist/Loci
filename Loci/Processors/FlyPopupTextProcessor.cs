@@ -100,7 +100,7 @@ public unsafe class FlyPopupTextProcessor : IDisposable
             // Process logic for non-null target.
             if(target is not null)
             {
-                _logger.LogDebug($"Processing {e.Status.Title} at {Utils.Frame} for {target->NameString}...");
+                _logger.LogDebug($"Processing {e.Status.Title} at {Utils.Frame} for {target->NameString}...", LoggerType.Processors);
                 CurrentElement = e;
                 var isMine = e.Status.Applier == PlayerData.NameWithWorld && e.IsAddition;
                 FlyTextKind kind;

@@ -160,7 +160,7 @@ public static class Utils
                 if (LociManager.ClientSM.Statuses.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not null && !data.Modifiers.Has(Modifiers.StacksIncrease))
                     continue;
                 // Apply
-                LociManager.ClientSM.AddOrUpdate(data.PreApply());
+                LociManager.ClientSM.AddOrUpdate(data.PreApply(), ManagerChangeType.ApplyRemove | ManagerChangeType.EventInvoked);
                 break;
             }
             else
@@ -169,7 +169,7 @@ public static class Utils
                     continue;
                 // Apply
                 var toApply = data.ApplyType = PresetApplyType.IgnoreExisting;
-                LociManager.ClientSM.ApplyPreset(data);
+                LociManager.ClientSM.ApplyPreset(data, ManagerChangeType.ApplyRemove | ManagerChangeType.EventInvoked);
                 break;
             }
         }

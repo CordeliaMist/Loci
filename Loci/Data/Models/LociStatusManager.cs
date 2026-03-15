@@ -31,12 +31,13 @@ public class ActorSM
     // The actor currently in control of this SM.
     [NonSerialized] internal unsafe Character* Owner = null!;
 
-    // If we should inform the IpcProvider that our SM changed.
-    [NonSerialized] internal bool NeedFireEvent = false;
+    // Stores what changes occured to this manager since it's last fired event.
+    [NonSerialized] internal ManagerChangeType DirtyChanges = ManagerChangeType.NoChange;
 
     internal unsafe nint OwnerAddress => (nint)Owner;
     internal unsafe bool OwnerValid => Owner != null;
     internal bool Ephemeral => EphemeralHosts.Count is not 0;
+    internal bool NeedInvokeChangeEvent => DirtyChanges > 0;
 
     public bool LockedByKey(Guid id, uint key)
         => LockedStatuses.TryGetValue(id, out var k) && k == key;
@@ -143,7 +144,7 @@ public class ActorSM
     ///     Ignored if locked and a matching key is not present. <para />
     ///     If not locked, and a matching key is present, locks the status.
     /// </summary>
-    public LociStatus? AddOrUpdate(LociStatus status, bool check = true, bool triggerEvent = true, uint key = 0)
+    public LociStatus? AddOrUpdate(LociStatus status, ManagerChangeType changeType, bool check = true, uint key = 0)
     {
         if (status is null || status.IsNull())
         {
@@ -181,19 +182,15 @@ public class ActorSM
 
                 // Update the status.
                 Statuses[i] = status;
-                
+
                 // fire trigger if needed and then early return.
-                if (triggerEvent)
-                    NeedFireEvent = true;
-                
+                DirtyChanges |= changeType;               
                 return Statuses[i];
             }
         }
 
         // if it was new, fire event if needed and add it.
-        if (triggerEvent)
-            NeedFireEvent = true;
-
+        DirtyChanges |= changeType;
         // Was new, so add it in!
         Statuses.Add(status);
         // If a lock was set, lock the status with the provided key.
@@ -254,18 +251,18 @@ public class ActorSM
     /// <summary>
     ///     Only controlled by the CommonProcessor and can bypass lock checks.
     /// </summary>
-    public void Remove(LociStatus status)
+    public void Remove(LociStatus status, ManagerChangeType changeType)
     {
         if (!Statuses.Remove(status))
             return;
         AddTextShown.Remove(status.GUID);
         RemTextShown.Remove(status.GUID);
         // Prepare a invokable action on the next tick.
-        NeedFireEvent = true;
+        DirtyChanges |= changeType;
     }
 
     // Effectively 'remove'
-    public bool Cancel(Guid id, bool triggerEvent = true, uint key = 0)
+    public bool Cancel(Guid id, ManagerChangeType changeType, uint key = 0)
     {
         // Prevent removal if this ID is locked.
         // (This assumes this is not called for natural falloff)
@@ -275,23 +272,22 @@ public class ActorSM
         if (Statuses.FirstOrDefault(s => s.GUID == id) is { } status)
         {
             status.ExpiresAt = 0;
-            if (triggerEvent)
-                NeedFireEvent = true;
+            changeType |= changeType;
             return true;
         }
         return false;
     }
 
     // Need to do a firstordefault since the appied status could have a different state.
-    public bool Cancel(LociStatus myStatus, bool triggetEvent = true, uint key = 0)
-        => Cancel(myStatus.GUID, triggetEvent, key);
+    public bool Cancel(LociStatus myStatus, ManagerChangeType changeType, uint key = 0)
+        => Cancel(myStatus.GUID, changeType, key);
 
     /// <summary>
     ///     Applies a LociPreset to this SM. <para />
     ///     Application behavior is determined by the Preset's ApplicationType.
     /// </summary>
     /// <remarks> Determine a good way to identify partial success indication later. </remarks>
-    public void ApplyPreset(LociPreset preset, uint key = 0)
+    public void ApplyPreset(LociPreset preset, ManagerChangeType changeType, uint key = 0)
     {
         var ignore = new HashSet<Guid>(Statuses.Where(s => s.Persistent).Select(s => s.GUID));
 
@@ -303,21 +299,21 @@ public class ActorSM
         if (preset.ApplyType is PresetApplyType.ReplaceAll)
             foreach (var s in Statuses)
                 if (!ignore.Contains(s.GUID) && !preset.Statuses.Contains(s.GUID))
-                    Cancel(s);
+                    Cancel(s, changeType);
 
         foreach (var id in preset.Statuses)
             if (LociData.Statuses.FirstOrDefault(x => x.GUID == id) is { } s && !ignore.Contains(s.GUID))
-                AddOrUpdate(s.PreApply(), key: key);
+                AddOrUpdate(s.PreApply(), changeType, key: key);
     }
 
     /// <summary>
     ///   Removes a preset from the status manager, and can be provided an unlock key.
     /// </summary>
     /// <remarks> Determine a good way to identify partial success indication later. </remarks>
-    public void RemovePreset(LociPreset p, uint key = 0)
+    public void RemovePreset(LociPreset p, ManagerChangeType changeType, uint key = 0)
     {
         foreach (var x in p.Statuses)
-            Cancel(x, key: key);
+            Cancel(x, changeType, key: key);
     }
 
     public byte[] BinarySerialize()
@@ -361,9 +357,6 @@ public class ActorSM
             Apply(Convert.FromBase64String(base64string));
     }
 
-    /// <summary>
-    ///     Update all Statuses in the SM from the DataString. Do not mark as ephemeral.
-    /// </summary>
     public void UpdateStatusesFromDataString(IEnumerable<LociStatus> newStatusList)
     {
         try

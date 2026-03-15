@@ -4,6 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using Loci.Services;
 using Loci.Services.Mediator;
+using LociApi.Enums;
 
 namespace Loci.Data;
 
@@ -132,7 +133,7 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             ClientSM.Owner = PlayerData.Character;
         }
         // Invoke that the manager changed on render to help DataSyncs detect initial display.
-        actorSM.NeedFireEvent = true;
+        actorSM.DirtyChanges |= ManagerChangeType.LinkUnlink;
     }
 
     private unsafe void MarkUnrendered(ActorSM actorSM, Character* chara)
@@ -164,7 +165,7 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
             ClientSM = newSM;
 
         // Invoke that the manager changed on render to help DataSyncs detect initial display.
-        newSM.NeedFireEvent = true;
+        newSM.DirtyChanges |= ManagerChangeType.LinkUnlink;
         // return the created manager.
         return newSM;
     }
