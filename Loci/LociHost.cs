@@ -22,7 +22,7 @@ public class LociHost : MediatorSubscriberBase, IHostedService
         _config = mainConfig;
         _serviceScopeFactory = scopeFactory;
     }
-    /// <summary> 
+    /// <summary>
     ///     The task to run after all services have been properly constructed. <para />
     ///     This will kickstart the server and begin all operations and verifications.
     /// </summary>
@@ -39,6 +39,7 @@ public class LociHost : MediatorSubscriberBase, IHostedService
         _lifetimeScope.ServiceProvider.GetRequiredService<UiService>();
         _lifetimeScope.ServiceProvider.GetRequiredService<CommandManager>();
         _lifetimeScope.ServiceProvider.GetRequiredService<IpcProviders>();
+        _lifetimeScope.ServiceProvider.GetRequiredService<EventMonitor>();
 
         TryDisplayChangelog();
         if (_config.Current.OpenOnStartup)

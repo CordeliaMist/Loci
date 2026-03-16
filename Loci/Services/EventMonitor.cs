@@ -60,7 +60,7 @@ public class EventMonitor : DisposableMediatorSubscriberBase
         Logger.LogDebug($"Territory changed to: {args.TerritoryType.RowId} ({PlayerContent.GetTerritoryName((ushort)args.TerritoryType.RowId)})", LoggerType.Processors);
         var prevTerritory = _latestTerritory;
         var prevIntendedUse = _latestIntendedUse;
-        
+
         // Await for the player to be loaded.
         await Utils.WaitForPlayerLoading();
         _latestTerritory = PlayerContent.TerritoryIdInstanced;
