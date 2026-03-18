@@ -108,10 +108,10 @@ public class SettingsTab
 
             using (var _ = CkRaii.FramedChildPaddedW("supported-plugins", buttonSize.X, ImUtf8.FrameHeightSpacing + ImUtf8.TextHeightSpacing * 2, 0, ImGui.GetColorU32(ImGuiCol.FrameBg)))
             {
-                var width = ImGui.CalcTextSize("Supported Plugins").X;
+                var width = ImGui.CalcTextSize("Integrated By:").X;
                 var offset = (_.InnerRegion.X - width) / 2;
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-                CkGui.TextUnderlined("Supported Plugins", CkCol.TriStateCheck.Vec4Ref());
+                CkGui.TextUnderlined("Integrated By:", CkCol.TriStateCheck.Vec4Ref());
                 ImGui.Spacing();
                 CkGui.CenterText("Sundouleia");
                 CkGui.CenterText("Dynamic Bridge");
