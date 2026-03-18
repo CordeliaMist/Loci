@@ -5,13 +5,11 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
 using Loci.Services.Mediator;
 using OtterGui.Text;
-using static Lumina.Data.Parsing.Layer.LayerCommon;
 
 namespace Loci.Gui;
 
@@ -106,16 +104,16 @@ public class SettingsTab
                     Util.OpenLink("https://github.com/CordeliaMist/Loci");
             CkGui.AttachToolTip($"View the GitHub repository for Loci");
 
-            using (var _ = CkRaii.FramedChildPaddedW("supported-plugins", buttonSize.X, ImUtf8.FrameHeightSpacing + ImUtf8.TextHeightSpacing * 2, 0, ImGui.GetColorU32(ImGuiCol.FrameBg)))
-            {
-                var width = ImGui.CalcTextSize("Integrated By:").X;
-                var offset = (_.InnerRegion.X - width) / 2;
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-                CkGui.TextUnderlined("Integrated By:", CkCol.TriStateCheck.Vec4Ref());
-                ImGui.Spacing();
-                CkGui.CenterText("Sundouleia");
-                CkGui.CenterText("Dynamic Bridge");
-            }
+            //using (var _ = CkRaii.FramedChildPaddedW("supported-plugins", buttonSize.X, ImUtf8.FrameHeightSpacing + ImUtf8.TextHeightSpacing * 2, 0, ImGui.GetColorU32(ImGuiCol.FrameBg)))
+            //{
+            //    var width = ImGui.CalcTextSize("Integrated By:").X;
+            //    var offset = (_.InnerRegion.X - width) / 2;
+            //    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
+            //    CkGui.TextUnderlined("Integrated By:", CkCol.TriStateCheck.Vec4Ref());
+            //    ImGui.Spacing();
+            //    CkGui.CenterText("Sundouleia");
+            //    CkGui.CenterText("Dynamic Bridge");
+            //}
         }
     }
 

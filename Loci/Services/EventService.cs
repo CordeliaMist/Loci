@@ -11,13 +11,21 @@ using LociApi.Enums;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using TerraFX.Interop.Windows;
 
 namespace Loci.Services;
 
 public class EventService : DisposableMediatorSubscriberBase
 {
     private const int CUSTOMIZE_LENGTH = 26;
-    private sealed record ConditionalApplication(Guid EventId, List<LociStatus> Statuses);
+    private record EventJobCache(Guid EventId, bool IsJob, JobFlags JobFlags, int GearsetIdx, List<LociStatus> Statuses)
+        : EventCache(EventId, Statuses)
+    {
+        public bool IsDifferent(JobFlags job, int gearsetIdx)
+            => IsJob ? !JobFlags.Has(job) : GearsetIdx != gearsetIdx;
+    }
+
+    private record EventCache(Guid EventId, List<LociStatus> Statuses);
 
     private readonly LociEventData _data;
 
@@ -114,11 +122,6 @@ public class EventService : DisposableMediatorSubscriberBase
         if (drawObj == null || drawObj->Object.GetObjectType() != ObjectType.CharacterBase)
             return;
 
-
-        // Try and not blow up.
-        if (PlayerData.Character->DrawObject == null)
-            return;
-
         try
         {
             var human = (Human*)drawObj;
@@ -139,7 +142,7 @@ public class EventService : DisposableMediatorSubscriberBase
         }
     }
 
-    private ConditionalApplication? _lastRaceCondition;
+    private EventCache? _lastRaceCondition;
     private void OnRaceChange(CharaRace prevRace, CharaRace newRace)
     {
         // Ignore when the gearset idx didnt change.
@@ -171,14 +174,14 @@ public class EventService : DisposableMediatorSubscriberBase
                 Logger.LogDebug($"Applied race change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                 // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
-                    _lastRaceCondition = new ConditionalApplication(candidate.GUID, appliedStatus);
+                    _lastRaceCondition = new EventCache(candidate.GUID, appliedStatus);
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
             {
                 Logger.LogDebug($"Applied race change event: {candidate.Title} with {appliedStatuses.Count} statuses applied from preset.", LoggerType.Events);
                 if (appliedStatuses.Count > 0)
-                    _lastRaceCondition = new ConditionalApplication(candidate.GUID, appliedStatuses);
+                    _lastRaceCondition = new EventCache(candidate.GUID, appliedStatuses);
                 break;
             }
         }
@@ -188,7 +191,7 @@ public class EventService : DisposableMediatorSubscriberBase
     }
 
 
-    private ConditionalApplication? _lastJobCondition;
+    private EventJobCache? _lastJobCondition;
     private void OnJobGearsetChange(int prevGearsetIdx, byte prevJobId, int newGearsetIdx, byte newJobId)
     {
         // Ignore when the gearset idx didnt change.
@@ -201,7 +204,7 @@ public class EventService : DisposableMediatorSubscriberBase
 
         var eventInThatCond = _lastJobCondition?.EventId ?? Guid.Empty;
         // Remove the previous condition.
-        if (_lastJobCondition is not null)
+        if (_lastJobCondition is { } jobCond && jobCond.IsDifferent(newJobFlag, newGearsetIdx))
         {
             foreach (var status in _lastJobCondition.Statuses)
                 LociManager.ClientSM.Cancel(status, ManagerChangeType.ApplyRemove | ManagerChangeType.EventInvoked);
@@ -222,14 +225,14 @@ public class EventService : DisposableMediatorSubscriberBase
                 Logger.LogDebug($"Applied job change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                 // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
-                    _lastJobCondition = new ConditionalApplication(candidate.GUID, appliedStatus);
+                    _lastJobCondition = new EventJobCache(candidate.GUID, candidate.GearsetIdx == -1, candidate.JobFlags, candidate.GearsetIdx, appliedStatus);
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
             {
                 Logger.LogDebug($"Applied job change event: {candidate.Title} with {appliedStatuses.Count} statuses applied from preset.", LoggerType.Events);
                 if (appliedStatuses.Count > 0)
-                    _lastJobCondition = new ConditionalApplication(candidate.GUID, appliedStatuses);
+                    _lastJobCondition = new EventJobCache(candidate.GUID, candidate.GearsetIdx == -1, candidate.JobFlags, candidate.GearsetIdx, appliedStatuses);
                 break;
             }
         }
@@ -246,7 +249,7 @@ public class EventService : DisposableMediatorSubscriberBase
         }
     }
 
-    private ConditionalApplication? _lastEmoteCondition;
+    private EventCache? _lastEmoteCondition;
     private unsafe void OnEmotePerformed(ushort emoteId, nint callerAddr, nint targetAddr)
     {
         var caller = (GameObject*)callerAddr;
@@ -282,14 +285,14 @@ public class EventService : DisposableMediatorSubscriberBase
                 Logger.LogDebug($"Applied emote event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                 // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
-                    _lastEmoteCondition = new ConditionalApplication(candidate.GUID, appliedStatus);
+                    _lastEmoteCondition = new EventCache(candidate.GUID, appliedStatus);
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
             {
                 Logger.LogDebug($"Applied emote event: {candidate.Title} with {appliedStatuses.Count} statuses applied from preset.", LoggerType.Events);
                 if (appliedStatuses.Count > 0)
-                    _lastEmoteCondition = new ConditionalApplication(candidate.GUID, appliedStatuses);
+                    _lastEmoteCondition = new EventCache(candidate.GUID, appliedStatuses);
                 break;
             }
         }
@@ -320,7 +323,7 @@ public class EventService : DisposableMediatorSubscriberBase
         }
     }
 
-    private ConditionalApplication? _lastZoneCondition;
+    private EventCache? _lastZoneCondition;
     private void OnZoneChanged(ushort prevTerritory, IntendedUseEnum prevUse, ushort newTerritory, IntendedUseEnum newUse)
     {
         if (prevTerritory == newTerritory && prevUse == newUse)
@@ -349,14 +352,14 @@ public class EventService : DisposableMediatorSubscriberBase
                 Logger.LogDebug($"Applied zone change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                 // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
-                    _lastZoneCondition = new ConditionalApplication(candidate.GUID, appliedStatus);
+                    _lastZoneCondition = new EventCache(candidate.GUID, appliedStatus);
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
             {
                 Logger.LogDebug($"Applied zone change event: {candidate.Title} with {appliedStatuses.Count} statuses applied from preset.", LoggerType.Events);
                 if (appliedStatuses.Count > 0)
-                    _lastZoneCondition = new ConditionalApplication(candidate.GUID, appliedStatuses);
+                    _lastZoneCondition = new EventCache(candidate.GUID, appliedStatuses);
                 break;
             }
         }
@@ -370,7 +373,7 @@ public class EventService : DisposableMediatorSubscriberBase
         }
     }
 
-    private ConditionalApplication? _lastOnlineStatusCondition;
+    private EventCache? _lastOnlineStatusCondition;
     private void OnOnlineStatusChange(byte lastOnlineStatus, byte newOnlineStatus)
     {
         if (lastOnlineStatus == newOnlineStatus)
@@ -404,7 +407,7 @@ public class EventService : DisposableMediatorSubscriberBase
                 if (appliedStatus.Count > 0)
                 {
                     Logger.LogDebug($"Setting last OnlineStatus condition with event {candidate.Title} and status {appliedStatus[0].Title}.", LoggerType.Events);
-                    _lastOnlineStatusCondition = new ConditionalApplication(candidate.GUID, appliedStatus);
+                    _lastOnlineStatusCondition = new EventCache(candidate.GUID, appliedStatus);
                 }
                 break;
             }
@@ -414,7 +417,7 @@ public class EventService : DisposableMediatorSubscriberBase
                 if (appliedStatuses.Count > 0)
                 {
                     Logger.LogDebug($"Setting last OnlineStatus condition with event {candidate.Title} and {appliedStatuses.Count} statuses from preset.", LoggerType.Events);
-                    _lastOnlineStatusCondition = new ConditionalApplication(candidate.GUID, appliedStatuses);
+                    _lastOnlineStatusCondition = new EventCache(candidate.GUID, appliedStatuses);
                 }
                 break;
             }
