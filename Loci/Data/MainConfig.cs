@@ -90,10 +90,10 @@ public class MainConfig : IHybridSavable
         if (!Current.Enabled)
             return false;
 
-        if (!Current.OffInDuty && Svc.Condition[ConditionFlag.BoundByDuty] || Svc.Condition[ConditionFlag.BoundByDuty56] || Svc.ClientState.IsPvP)
+        if (Current.OffInDuty && (Svc.Condition[ConditionFlag.BoundByDuty] || Svc.Condition[ConditionFlag.BoundByDuty56] || Svc.ClientState.IsPvP))
             return false;
 
-        if (!Current.OffInCombat && Svc.Condition[ConditionFlag.InCombat])
+        if (Current.OffInCombat && Svc.Condition[ConditionFlag.InCombat])
             return false;
         // Otherwise, valid!
         return true;
