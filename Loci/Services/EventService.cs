@@ -30,6 +30,8 @@ public class EventService : DisposableMediatorSubscriberBase
     private readonly LociEventData _data;
 
     // For previous locations to reference in comparisons.
+    private DateTime _delayedUpdateCheck = DateTime.Now;
+
     private ushort _latestTerritory = 0;
     private IntendedUseEnum _latestIntendedUse = IntendedUseEnum.UNK;
     private byte _latestOnlineStatus = 0;
@@ -109,6 +111,12 @@ public class EventService : DisposableMediatorSubscriberBase
     {
         if (!PlayerData.Available)
             return;
+
+        if (DateTime.Now < _delayedUpdateCheck.AddSeconds(1))
+        {
+            Mediator.Publish(new DelayedFrameworkUpdateMessage());
+            _delayedUpdateCheck = DateTime.Now;
+        }
 
         if (PlayerData.Character->OnlineStatus != _latestOnlineStatus)
         {

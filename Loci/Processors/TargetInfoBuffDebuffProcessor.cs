@@ -1,6 +1,7 @@
 ﻿using CkCommons;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.ClientState.Statuses;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -14,7 +15,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
     private readonly MainConfig _config;
     private readonly LociManager _manager;
 
-    public int NumStatuses = 0;
+    public int NumVanillaStatuses = 0;
     public TargetInfoBuffDebuffProcessor(ILogger<TargetInfoBuffDebuffProcessor> logger, MainConfig config, LociManager manager)
     {
         _logger = logger;
@@ -54,6 +55,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
         var target = ts->SoftTarget is not null ? ts->SoftTarget : ts->Target;
         if (target is null || !target->IsCharacter() || target->ObjectKind is not ObjectKind.Companion)
             return;
+
         // Clear visibility of all subnodes.
         if (addonBase is not null && AddonHelp.IsAddonReady(addonBase))
         {
@@ -72,13 +74,30 @@ public unsafe class TargetInfoBuffDebuffProcessor
         if (addonBase is null || !AddonHelp.IsAddonReady(addonBase))
             return;
 
-        NumStatuses = 0;
-        for (var i = 3u; i <= 32; i++)
+        if (_config.Current.MoodlesSupport)
         {
-            var c = addonBase->UldManager.SearchNodeById(i);
-            if (c->IsVisible())
-                NumStatuses++;
+            NumVanillaStatuses = 0;
+            var ts = TargetSystem.Instance();
+            var target = ts->SoftTarget is not null ? ts->SoftTarget : ts->Target;
+            if (target is null || !target->IsCharacter() || target->ObjectKind is not ObjectKind.Pc)
+                return;
+
+            var chara = (Character*)target;
+            if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is { } statusList)
+                NumVanillaStatuses = statusList.Count(x => x.StatusId != 0);
         }
+        else
+        {
+            NumVanillaStatuses = 0;
+            for (var i = 3u; i <= 32; i++)
+            {
+                var c = addonBase->UldManager.SearchNodeById(i);
+                if (c->IsVisible())
+                    NumVanillaStatuses++;
+            }
+        }
+        _logger.LogTrace($"TargetInfo Requested update: {NumVanillaStatuses}", LoggerType.Processors);
+
     }
 
     private void OnTargetInfoBuffDebuffUpdate(AddonEvent type, AddonArgs args)
@@ -101,7 +120,15 @@ public unsafe class TargetInfoBuffDebuffProcessor
         if (addon is null || !AddonHelp.IsAddonReady(addon))
             return;
 
-        var baseCnt = 3 + NumStatuses;
+        if (_config.Current.MoodlesSupport)
+            UpdateAddonWithMoodles(addon, (Character*)target, hideAll);
+        else
+            UpdateAddonNormal(addon, (Character*)target, hideAll);
+    }
+
+    private unsafe void UpdateAddonNormal(AtkUnitBase* addon, Character* target, bool hideAll)
+    {
+        var baseCnt = 3 + NumVanillaStatuses;
         for (var i = baseCnt; i <= 32; i++)
         {
             var c = addon->UldManager.SearchNodeById((uint)i);
@@ -112,9 +139,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
         if (hideAll)
             return;
 
-        // Update the statuses
-        var sm = _manager.GetOrCreateSM((Character*)target);
-        // If a companion, force visibility
+        var sm = _manager.GetOrCreateSM(target);
         if (target->ObjectKind is ObjectKind.Companion)
         {
             var c = addon->UldManager.SearchNodeById(2);
@@ -125,6 +150,47 @@ public unsafe class TargetInfoBuffDebuffProcessor
         foreach (var x in sm.Statuses)
         {
             if (baseCnt > 32)
+                break;
+
+            if (x.ExpiresAt - Utils.Time > 0)
+            {
+                SetIcon(addon, baseCnt, x, sm);
+                baseCnt++;
+            }
+        }
+    }
+
+    private unsafe void UpdateAddonWithMoodles(AtkUnitBase* addon, Character* target, bool hideAll)
+    {
+        var sm = _manager.GetOrCreateSM(target);
+        var baseCnt = 3 + NumVanillaStatuses;
+        // If moodles is available, add the offset count
+        if (MoodlesWatcher.APIAvailable)
+            baseCnt += MoodlesWatcher.Offsets.TryGetValue((nint)target, out var dat) ? dat.TotalCnt : 0;
+
+        var endCnd = Math.Min(baseCnt + sm.Statuses.Count + LociProcessor.RemovedThisTick - 1, 32);
+        // calc the endCount
+        for (var i = baseCnt; i <= endCnd; i++)
+        {
+            var c = addon->UldManager.SearchNodeById((uint)i);
+            if (c->IsVisible())
+                c->NodeFlags ^= NodeFlags.Visible;
+        }
+
+        if (hideAll)
+            return;
+        
+        // If a companion, force visibility
+        if (target->ObjectKind is ObjectKind.Companion)
+        {
+            var c = addon->UldManager.SearchNodeById(2);
+            if (!c->IsVisible())
+                c->NodeFlags ^= NodeFlags.Visible;
+        }
+
+        foreach (var x in sm.Statuses)
+        {
+            if (baseCnt > endCnd)
                 break;
 
             if (x.ExpiresAt - Utils.Time > 0)

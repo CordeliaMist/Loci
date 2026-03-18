@@ -346,11 +346,18 @@ public static class Utils
         using var tt = ImRaii.Tooltip();
 
         // push the title, converting all color tags into the actual label.
-        CkRichText.Text(item.Title, cloneId: 100);
-        if (!item.Description.IsNullOrWhitespace())
+        try
         {
-            ImGui.Separator();
-            CkRichText.Text(350f, item.Description);
+            CkRichText.Text(item.Title, cloneId: 100);
+            if (!item.Description.IsNullOrWhitespace())
+            {
+                ImGui.Separator();
+                CkRichText.Text(350f, item.Description);
+            }
+        }
+        catch (Exception e)
+        {
+            Svc.Logger.Error($"Error parsing CKRICHTEXT {e}");
         }
 
         CkGui.ColorText("Duration:", ImGuiColors.ParsedGold);
@@ -394,10 +401,17 @@ public static class Utils
 
         // push the title, converting all color tags into the actual label.
         CkRichText.Text(item.Title, cloneId: 100);
-        if (!item.Description.IsNullOrWhitespace())
+        try
         {
-            ImGui.Separator();
-            CkRichText.Text(350f, item.Description);
+            if (!item.Description.IsNullOrWhitespace())
+            {
+                ImGui.Separator();
+                CkRichText.Text(350f, item.Description);
+            }
+        }
+        catch (Exception e)
+        {
+            Svc.Logger.Information($"Error Parsing CKRICHTEXT {e}");
         }
 
         CkGui.ColorText("Duration:", ImGuiColors.ParsedGold);
@@ -479,7 +493,6 @@ public static class Utils
             var parts = CkRichText.RichTextRegex().Split(text);
             var str = new SeStringBuilder();
             int[] openTags = new int[3]; // 0=color, 1=glow, 2=italics
-
             foreach (var s in parts)
             {
                 if (s.Length is 0)

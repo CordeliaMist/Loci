@@ -7,6 +7,7 @@ public enum FSChangeType { Created, Deleted, Renamed, Modified }
 public enum LociModule { Statuses, Presets, Events }
 
 // Essential to the CharaWatcher
+public record DelayedFrameworkUpdateMessage : SameThreadMessage;
 public record WatchedObjectCreated(IntPtr Address) : SameThreadMessage;
 public record WatchedObjectDestroyed(IntPtr Address) : SameThreadMessage;
 
@@ -14,6 +15,8 @@ public record WatchedObjectDestroyed(IntPtr Address) : SameThreadMessage;
 /// <summary> If the processors for Loci should run or not. </summary>
 /// <remarks> This is a SameThreadMessage as it is linked to API calls and should be accurate. </remarks>
 public record EnabledStateChangeMessage(bool NewState) : SameThreadMessage;
+
+public record CompatibilityModeChanged(bool NewState) : MessageBase;
 
 /// <summary> Tells us when the client has changed territories or zones. </summary>
 /// <remarks> This always occurs after the ClientPlayer is determined valid. </remarks>

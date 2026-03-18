@@ -18,6 +18,7 @@ public class ConfigStorage
     public bool OpenOnStartup { get; set; } = true;
 
     public bool Enabled { get; set; } = true;
+    public bool MoodlesSupport { get; set; } = false;
     public bool SheVfxEnabled { get; set; } = true; // Enable SHE Status application
     public bool SheVfxRestricted { get; set; } = true; // Restricted to party, friends, and nearby only.
     public bool FlyText { get; set; } = true;

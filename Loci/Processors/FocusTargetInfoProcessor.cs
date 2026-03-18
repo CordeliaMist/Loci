@@ -1,6 +1,7 @@
 ﻿using CkCommons;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.ClientState.Statuses;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -16,7 +17,7 @@ public unsafe class FocusTargetInfoProcessor
     private readonly LociMemory _memory;
     private readonly LociManager _manager;
 
-    private int NumStatuses = 0;
+    private int NumVanillaStatuses = 0;
 
     public FocusTargetInfoProcessor(ILogger<FocusTargetInfoProcessor> logger, MainConfig config,
         LociMemory memory, LociManager manager)
@@ -72,17 +73,33 @@ public unsafe class FocusTargetInfoProcessor
 
     private void PostRequestedUpdate(AtkUnitBase* addonBase)
     {
-        if (addonBase is not null && AddonHelp.IsAddonReady(addonBase))
+        if (addonBase is null || !AddonHelp.IsAddonReady(addonBase))
+            return;
+
+        if (_config.Current.MoodlesSupport)
         {
-            NumStatuses = 0;
+            NumVanillaStatuses = 0;
+            var target = TargetSystem.Instance()->FocusTarget;
+            if (target is null || !target->IsCharacter() || target->ObjectKind is not ObjectKind.Pc)
+                return;
+
+            var chara = (Character*)target;
+            if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is { } statusList)
+                NumVanillaStatuses = statusList.Count(x => x.StatusId != 0 && !LociProcessor.SpecialStatuses.Contains(x.StatusId));
+
+            _logger.LogTrace($"TargetInfo Requested update: {NumVanillaStatuses}", LoggerType.Processors);
+        }
+        else
+        {
+            NumVanillaStatuses = 0;
             for (var i = 8; i >= 4; i--)
             {
                 var c = addonBase->UldManager.NodeList[i];
                 if (c->IsVisible())
-                    NumStatuses++;
+                    NumVanillaStatuses++;
             }
+            _logger.LogTrace($"FocusTarget Requested update: {NumVanillaStatuses}", LoggerType.Processors);
         }
-        _logger.LogTrace($"FocusTarget Requested update: {NumStatuses}", LoggerType.Processors);
     }
 
     private void OnFocusTargetInfoUpdate(AddonEvent type, AddonArgs args)
@@ -100,13 +117,20 @@ public unsafe class FocusTargetInfoProcessor
 
         if (addon is null || !AddonHelp.IsAddonReady(addon))
             return;
-        
-        // Determine the base count by combining the Moodles statuses with the statuses from the base game.
-        var baseCnt = 8 - NumStatuses;
+
+        if (_config.Current.MoodlesSupport)
+            UpdateAddonWithMoodles(addon, (Character*)target, hideAll);
+        else
+            UpdateAddonNormal(addon, (Character*)target, hideAll);
+    }
+
+    private unsafe void UpdateAddonNormal(AtkUnitBase* addon, Character* target, bool hideAll)
+    {
+        var baseCnt = 8 - NumVanillaStatuses;
         for (var i = baseCnt; i >= 4; i--)
         {
             var c = addon->UldManager.NodeList[i];
-            if(c->IsVisible())
+            if (c->IsVisible())
                 c->NodeFlags ^= NodeFlags.Visible;
         }
 
@@ -114,7 +138,54 @@ public unsafe class FocusTargetInfoProcessor
             return;
 
         // Update the displays.
-        var sm = _manager.GetOrCreateSM((Character*)target);
+        // If a companion, force visibility
+        if (target->ObjectKind is ObjectKind.Companion)
+        {
+            var c = addon->UldManager.NodeList[3];
+            if (!c->IsVisible())
+                c->NodeFlags ^= NodeFlags.Visible;
+        }
+
+        var sm = _manager.GetOrCreateSM(target);
+        foreach (var x in sm.Statuses)
+        {
+            if (x.Type is StatusType.Special)
+                continue;
+
+            if (baseCnt < 4)
+                break;
+
+            var rem = x.ExpiresAt - Utils.Time;
+            if (rem > 0)
+            {
+                SetIcon(addon, baseCnt, x, sm);
+                baseCnt--;
+            }
+        }
+    }
+
+    private unsafe void UpdateAddonWithMoodles(AtkUnitBase* addon, Character* target, bool hideAll)
+    {
+        var sm = _manager.GetOrCreateSM(target);
+        var nonSpecialCnt = sm.Statuses.Count(s => s.Type is not StatusType.Special);
+        var baseCnt = 8 - NumVanillaStatuses;
+        // If moodles is available, get the pos and neg combined.
+        if (MoodlesWatcher.APIAvailable)
+            baseCnt -= MoodlesWatcher.Offsets.TryGetValue((nint)target, out var data) ? (data.PosCnt + data.NegCnt) : 0;
+        // Calc the endCount
+        var endCnt = Math.Max(4, baseCnt - nonSpecialCnt - LociProcessor.RemovedThisTick + 1);
+
+        for (var i = baseCnt; i >= endCnt; i--)
+        {
+            var c = addon->UldManager.NodeList[i];
+            if (c->IsVisible())
+                c->NodeFlags ^= NodeFlags.Visible;
+        }
+
+        if (hideAll)
+            return;
+
+        // Update the displays.
         // If a companion, force visibility
         if (target->ObjectKind is ObjectKind.Companion)
         {
@@ -128,9 +199,9 @@ public unsafe class FocusTargetInfoProcessor
             if (x.Type is StatusType.Special)
                 continue;
 
-            if (baseCnt < 4)
+            if (baseCnt < endCnt)
                 break;
-                    
+
             var rem = x.ExpiresAt - Utils.Time;
             if (rem > 0)
             {

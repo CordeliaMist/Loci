@@ -77,6 +77,8 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
     public static nint HoveringOver = 0;
     public static List<nint> CancelRequests = [];
     public static bool WasRightMousePressed = false;
+    public static int RemovedThisTick = 0;
+
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -148,7 +150,8 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
     private unsafe void OnTick(IFramework _)
     {
         // List of VFX that should be handled by the StatusHitEffect.
-        SHECandidates.Clear();
+        SHECandidates = [];
+        RemovedThisTick = 0;
 
         if (HoveringOver != 0)
         {
@@ -210,8 +213,13 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
             // Now process the removal of all statuses marked.
             // (This allows for chains to be applied without removing original if desired)
             if (removed.Count > 0)
+            {
                 foreach (var status in removed)
+                {
                     sm.Remove(status, ManagerChangeType.ApplyRemove);
+                    RemovedThisTick++;
+                }
+            }
 
             // Handle any status chaining logic.
             if (doChainApply.Count > 0)

@@ -40,6 +40,7 @@ public class LociHost : MediatorSubscriberBase, IHostedService
         _lifetimeScope.ServiceProvider.GetRequiredService<CommandManager>();
         _lifetimeScope.ServiceProvider.GetRequiredService<IpcProviders>();
         _lifetimeScope.ServiceProvider.GetRequiredService<EventService>();
+        _lifetimeScope.ServiceProvider.GetRequiredService<MoodlesWatcher>();
 
         TryDisplayChangelog();
         if (_config.Current.OpenOnStartup)

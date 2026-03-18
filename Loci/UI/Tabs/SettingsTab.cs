@@ -38,7 +38,6 @@ public class SettingsTab
     public unsafe void DrawSettings(Vector2 region)
     {
         var pos = ImGui.GetCursorPos();
-        CkGui.FontText("Functionality", Fonts.Default150Percent);
         var enabled = _config.Current.Enabled;
         if (ImGui.Checkbox($"Enable Module", ref enabled))
         {
@@ -46,6 +45,7 @@ public class SettingsTab
             _config.Save();
             _mediator.Publish(new EnabledStateChangeMessage(enabled));
         }
+        
         DrawIndentedEnables();
 
         var openOnStart = _config.Current.OpenOnStartup;
@@ -53,6 +53,24 @@ public class SettingsTab
         {
             _config.Current.OpenOnStartup = openOnStart;
             _config.Save();
+        }
+
+        if (MoodlesWatcher.APIAvailable)
+        {
+            var compatibilityMode = _config.Current.MoodlesSupport;
+            if (ImGui.Checkbox("Moodle Compatibility", ref compatibilityMode))
+            {
+#if DEBUG
+                _config.Current.MoodlesSupport = compatibilityMode;
+                _config.Save();
+                _mediator.Publish(new CompatibilityModeChanged(compatibilityMode));
+#endif
+            }
+            CkGui.HelpText("--COL--PLEASE READ CAREFULLY!--COL--" +
+                "--SEP----COL--<!>--COL-- This is currently Non-Functional! --COL--<!>--COL--" +
+                "--SEP--Enabling this allows for Moodles and Loci to both be enabled." +
+                "--NL--Loci will offset its statuses to match any applied to Moodles." +
+                "--NL----COL--This does not mean people with Moodles will see your Locis--COL--", ImGuiColors.DalamudOrange, true);
         }
 
         CkGui.FontText("Limiters", Fonts.Default150Percent);
@@ -90,6 +108,10 @@ public class SettingsTab
 
         DrawMigrate();
 
+#if DEBUG
+        ImGui.Separator();
+        MoodlesWatcher.DebugManagers();
+#endif
         var buttonSize = new Vector2(150f * ImGuiHelpers.GlobalScale, 0);
         ImGui.SetCursorPos(pos + new Vector2(region.X - buttonSize.X, 0));
         using (ImRaii.Group())
@@ -103,17 +125,6 @@ public class SettingsTab
                 if (ImGui.Button("GitHub Page", buttonSize))
                     Util.OpenLink("https://github.com/CordeliaMist/Loci");
             CkGui.AttachToolTip($"View the GitHub repository for Loci");
-
-            //using (var _ = CkRaii.FramedChildPaddedW("supported-plugins", buttonSize.X, ImUtf8.FrameHeightSpacing + ImUtf8.TextHeightSpacing * 2, 0, ImGui.GetColorU32(ImGuiCol.FrameBg)))
-            //{
-            //    var width = ImGui.CalcTextSize("Integrated By:").X;
-            //    var offset = (_.InnerRegion.X - width) / 2;
-            //    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-            //    CkGui.TextUnderlined("Integrated By:", CkCol.TriStateCheck.Vec4Ref());
-            //    ImGui.Spacing();
-            //    CkGui.CenterText("Sundouleia");
-            //    CkGui.CenterText("Dynamic Bridge");
-            //}
         }
     }
 
@@ -159,8 +170,7 @@ public class SettingsTab
     private void DrawMigrate()
     {
         var oldDirExists = Directory.Exists(GetOldMigratableDirectoryPath());
-        var sundDirExists = Directory.Exists(GetSundMigratableDirectoryPath());
-        if (!oldDirExists && !sundDirExists)
+        if (!oldDirExists)
             return;
 
         ImGui.Separator();
@@ -213,61 +223,12 @@ public class SettingsTab
             }
             CkGui.AttachToolTip("Import all presets to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
         }
-
-        if (sundDirExists)
-        {
-            if (CkGui.IconTextButton(FAI.FileImport, "Statuses (Sundouleia)", disabled: !shiftAndCtrlPressed))
-            {
-                try
-                {
-                    var statusFS = Path.Combine(GetSundMigratableDirectoryPath(), "filesystem", "fs-statuses.json");
-                    var statuses = Path.Combine(GetSundMigratableDirectoryPath(), "lociData.json");
-                    if (File.Exists(statusFS) && File.Exists(statuses))
-                    {
-                        _logger.LogInformation($"Importing from {statusFS}");
-                        var defaultJson = JObject.Parse(File.ReadAllText(statuses));
-                        _data.SundStatusMigration(defaultJson);
-                        _statusFileSystem.MergeWithMigratableFile(statusFS);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to Import statuses");
-                }
-            }
-            CkGui.AttachToolTip("Import all statuses from Sundouleia.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
-
-            ImGui.SameLine();
-            if (CkGui.IconTextButton(FAI.FileImport, "Presets (Sundouleia)", disabled: !shiftAndCtrlPressed))
-            {
-                try
-                {
-                    var presetFS = Path.Combine(GetSundMigratableDirectoryPath(), "filesystem", "fs-presets.json");
-                    var presets = Path.Combine(GetSundMigratableDirectoryPath(), "lociData.json");
-                    if (File.Exists(presetFS) && File.Exists(presets))
-                    {
-                        _logger.LogInformation($"Import from {presetFS}");
-                        var defaultJson = JObject.Parse(File.ReadAllText(presets));
-                        _data.SundPresetMigration(defaultJson);
-                        _presetFileSystem.MergeWithMigratableFile(presetFS);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to Import presets");
-                }
-            }
-            CkGui.AttachToolTip("Import all presets from Sundouleia.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
-        }
     }
 
     #region Helpers
     // Locate if we are able to migrate
     private string GetOldMigratableDirectoryPath()
         => Path.GetDirectoryName(FileProvider.Directory) is { } path ? Path.Combine(path, "Moodles") : string.Empty;
-    
-    private string GetSundMigratableDirectoryPath()
-         => Path.GetDirectoryName(FileProvider.Directory) is { } path ? Path.Combine(path, "Sundouleia") : string.Empty;
 
     private string GetOldMigrationFilePath(string fileName)
         => Path.Combine(GetOldMigratableDirectoryPath(), fileName);
