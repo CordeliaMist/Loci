@@ -255,8 +255,6 @@ public class EventService : DisposableMediatorSubscriberBase
         if (!CharaWatcher.Rendered.Contains(callerAddr))
             return;
 
-        Logger.LogDebug($"EmotePerformed [EmoteId: {emoteId}] (Had CondEvent: {_lastEmoteCondition != null})", LoggerType.Events);
-
         // Filter based on the type.
         var isClientRendered = PlayerData.Available;
         var clientIsCaller = isClientRendered && callerAddr == PlayerData.Address;
