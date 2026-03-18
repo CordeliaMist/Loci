@@ -15,7 +15,8 @@ public class LociApiMain : DisposableMediatorSubscriberBase, ILociApi
 
     // Our API Version, exposed to other plugins for compatibility checking.
     public const int VERSION_MAJOR = 2;
-    public const int VERSION_MINOR = 1;
+    public const int VERSION_MINOR = 2;
+    public const int VERSION_TUPLE = 2;
 
     public LociApiMain(
         ILogger<LociApiMain> logger,
@@ -34,11 +35,12 @@ public class LociApiMain : DisposableMediatorSubscriberBase, ILociApi
         _presets = presets;
         _events = events;
 
-        Mediator.Subscribe<NewEnabledStateMessage>(this, _ => EnabledStateChanged?.Invoke(_.NewState));
+        Mediator.Subscribe<EnabledStateChangeMessage>(this, _ => EnabledStateChanged?.Invoke(_.NewState));
     }
 
     // ApiBase
     public (int Major, int Minor) ApiVersion => (VERSION_MAJOR, VERSION_MINOR);
+    public int TupleVersion => VERSION_TUPLE;
     public bool IsEnabled => _config.Current.Enabled;
     public event Action<bool>? EnabledStateChanged;
 

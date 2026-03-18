@@ -10,13 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Loci.Services;
 
 public unsafe class CharaWatcher : IHostedService
-{
-    public static class Delegates
-    {
-        public unsafe delegate void CharaInfo(Character* thisPtr, ObjectKind kind, string nameKey);
-        public unsafe delegate bool CharaPtr(Character* thisPtr);
-    }
-    
+{    
     internal Hook<Character.Delegates.OnInitialize> OnCharaInitializeHook;
     internal Hook<Character.Delegates.Dtor> OnCharaDestroyHook;
     internal Hook<Character.Delegates.Terminate> OnCharaTerminateHook;
@@ -106,21 +100,6 @@ public unsafe class CharaWatcher : IHostedService
         return false;
     }
 
-    // Can make additional methods here to search by key as well most likely? Idk.
-    public static unsafe bool TryGetFirstUnsafe(Delegates.CharaPtr predicate, [NotNullWhen(true)] out Character* character)
-    {
-        foreach (Character* addr in Rendered)
-        {
-            if (predicate(addr))
-            {
-                character = addr;
-                return true;
-            }
-        }
-        character = null;
-        return false;
-    }
-
     /// <summary>
     ///     Obtain a Character* if rendered, returning false otherwise.
     /// </summary>
@@ -160,15 +139,6 @@ public unsafe class CharaWatcher : IHostedService
         Rendered.Remove(address);
         _mediator.Publish(new WatchedObjectDestroyed(address));
     }
-
-    public unsafe static string GetLociKey(Character* chara) => chara->ObjectKind switch
-    {
-        ObjectKind.Pc => chara->GetNameWithWorld(),
-        ObjectKind.Companion => $"{((Companion*)chara)->Owner->NameString}'s {chara->NameString}",
-        ObjectKind.BattleNpc => $"{chara->NameString} ({(nint)chara:X})", // Could be too vague, maybe another way to validate pets?
-        _ => string.Empty
-    };
-
 
     // Init with original first, than handle so it is present in our other lookups.
     private unsafe void InitializeCharacter(Character* chara)

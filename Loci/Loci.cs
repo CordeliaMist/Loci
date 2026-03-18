@@ -98,7 +98,7 @@ public static class LociServiceExtensions
         .AddSingleton<TargetInfoBuffDebuffProcessor>()
         // Services
         .AddSingleton<CharaWatcher>()
-        .AddSingleton<EventMonitor>()
+        .AddSingleton<EventService>()
         .AddSingleton<LociMediator>()
         // UI
         .AddSingleton<LociUITabs>()

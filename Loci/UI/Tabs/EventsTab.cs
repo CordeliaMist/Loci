@@ -54,6 +54,9 @@ public class LociEventsTab : IDisposable
 
         _ownStatusCombo = new SavedStatusesCombo(logger, manager, () => [.. LociData.Statuses.OrderBy(s => s.Title)]);
         _ownPresetsCombo = new SavedPresetsCombo(logger, manager, () => [.. LociData.Presets.OrderBy(p => p.Title)]);
+        _ownStatusCombo.HintText = "Select reaction status..";
+        _ownPresetsCombo.HintText = "Select reaction preset..";
+
         _jobCombo = new JobFlagsCombo(logger, 1.0f);
         _iconSelector = new IconDataSelector(favorites);
         _emoteCombo = new EmoteCombo(logger, 1.0f);
@@ -146,6 +149,9 @@ public class LociEventsTab : IDisposable
                 break;
             case LociEventType.TimeOfDay:
                 DrawTimeBased(sel, leftW);
+                break;
+            case LociEventType.Race:
+                DrawRaceBased(sel, leftW);
                 break;
         }
     }
@@ -262,11 +268,24 @@ public class LociEventsTab : IDisposable
 
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
+        CkGui.TextFrameAligned("Behavior:");
+        CkGui.HelpText("How the selected reaction will interact with your Status Manager.", true);
+
+        ImGui.TableNextColumn();
+        if (CkGuiUtils.EnumCombo("##behavior", ImGui.GetContentRegionAvail().X, sel.Behavior, out var newBehavior, _ => _.ToName(), flags: CFlags.None))
+        {
+            sel.Behavior = newBehavior;
+            _data.MarkEventModified(sel);
+        }
+
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
         CkGui.TextFrameAligned("Event Type:");
         ImGui.TableNextColumn();
         if (CkGuiUtils.EnumCombo("##eventType", ImGui.GetContentRegionAvail().X, sel.EventType, out var newType, flags: CFlags.None))
         {
             sel.EventType = newType;
+            sel.IndicatedID = 0;
             _data.MarkEventModified(sel);
         }
     }
@@ -543,5 +562,28 @@ public class LociEventsTab : IDisposable
     {
         ImGui.Spacing();
         CkGui.ColorTextCentered("WIP...", CkCol.TriStateCross.Vec4Ref());
+    }
+
+    private void DrawRaceBased(LociEvent sel, float leftW)
+    {
+        ImGui.Spacing();
+        using var t = ImRaii.Table("##race", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame);
+        if (!t) return;
+
+        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthFixed, leftW);
+        ImGui.TableSetupColumn("Field", ImGuiTableColumnFlags.WidthStretch);
+
+        ImGui.TableNextColumn();
+        CkGui.TextFrameAligned("Race:");
+        CkGui.HelpText("Occurs when your character is this race (Can invoke via Glamourer change).");
+
+        ImGui.TableNextColumn();
+        var raceId = (CharaRace)sel.IndicatedID;
+        if (CkGuiUtils.EnumCombo("##race", ImGui.GetContentRegionAvail().X, raceId, out var newRace, skip: 1, flags: CFlags.None))
+        {
+            sel.IndicatedID = (uint)newRace;
+            _data.MarkEventModified(sel);
+        }
+        CkGui.AttachToolTip("When switching to this race, the event triggers");
     }
 }

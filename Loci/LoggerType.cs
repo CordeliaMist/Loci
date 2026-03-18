@@ -17,9 +17,10 @@ public enum LoggerType : long
     // Data
     Data            = 1L << 7,
     DataManagement  = 1L << 8,
+    Events          = 1L << 9,
     // IPC   
-    IpcProvider     = 1L << 9,
-    Ipc             = 1L << 10,
+    IpcProvider     = 1L << 10,
+    Ipc             = 1L << 11,
 
     // All Recommended types.
     Recommended = Objects | Data | DataManagement | IpcProvider,

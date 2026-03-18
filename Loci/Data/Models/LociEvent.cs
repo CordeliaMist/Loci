@@ -20,7 +20,7 @@ public partial class LociEvent
     public string Description = string.Empty;
 
     public LociEventType EventType = LociEventType.Emote;
-
+    public EventBehavior Behavior = EventBehavior.Apply;
     // How to respond when the spesified condition is met.
     public ChainType ReactionType = ChainType.Status;
     public Guid ReactionGUID = Guid.Empty;
@@ -57,6 +57,7 @@ public partial class LociEvent
             Title = Title,
             Description = Description,
             EventType = EventType,
+            Behavior = Behavior,
             ReactionType = ReactionType,
             ReactionGUID = ReactionGUID,
             ReactionTarget = ReactionTarget,

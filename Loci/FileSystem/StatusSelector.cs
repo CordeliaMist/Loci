@@ -1,6 +1,7 @@
 using CkCommons.FileSystem;
 using CkCommons.FileSystem.Selector;
 using CkCommons.Gui;
+using CkCommons.Helpers;
 using CkCommons.RichText;
 using CkCommons.Textures;
 using Dalamud.Bindings.ImGui;
@@ -40,6 +41,7 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
         UnsubscribeRightClickLeaf(RenameLeaf);
 
         SubscribeRightClickLeaf(CopyToClipboard);
+        SubscribeRightClickLeaf(CloneStatus);
         SubscribeRightClickLeaf(DeleteStatus);
         SubscribeRightClickLeaf(RenameLeaf);
         SubscribeRightClickLeaf(RenameStatus);
@@ -67,6 +69,13 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
             var copyText = JsonConvert.SerializeObject(copy);
             ImGui.SetClipboardText(copyText);
         }
+    }
+
+    private void CloneStatus(StatusesFS.Leaf leaf)
+    {
+        if (ImGui.Selectable("Clone Status", false))
+            _data.CloneStatus(leaf.Value, leaf.Value.Title);
+        CkGui.AttachToolTip("Create a clone of this status");
     }
 
     private void RenameStatus(StatusesFS.Leaf leaf)

@@ -251,14 +251,15 @@ public class ActorSM
     /// <summary>
     ///     Only controlled by the CommonProcessor and can bypass lock checks.
     /// </summary>
-    public void Remove(LociStatus status, ManagerChangeType changeType)
+    public bool Remove(LociStatus status, ManagerChangeType changeType)
     {
         if (!Statuses.Remove(status))
-            return;
+            return false;
         AddTextShown.Remove(status.GUID);
         RemTextShown.Remove(status.GUID);
         // Prepare a invokable action on the next tick.
         DirtyChanges |= changeType;
+        return true;
     }
 
     // Effectively 'remove'
@@ -287,13 +288,14 @@ public class ActorSM
     ///     Application behavior is determined by the Preset's ApplicationType.
     /// </summary>
     /// <remarks> Determine a good way to identify partial success indication later. </remarks>
-    public void ApplyPreset(LociPreset preset, ManagerChangeType changeType, uint key = 0)
+    public List<LociStatus> ApplyPreset(LociPreset preset, ManagerChangeType changeType, uint key = 0)
     {
-        var ignore = new HashSet<Guid>(Statuses.Where(s => s.Persistent).Select(s => s.GUID));
-
-        if (preset.ApplyType is PresetApplyType.IgnoreExisting)
-            foreach (var s in Statuses)
-                ignore.Add(s.GUID);
+        var applied = new List<LociStatus>();
+        // create the ignore list based on the applyType
+        var ignore = Statuses
+            .Where(s => s.Persistent || preset.ApplyType is PresetApplyType.IgnoreExisting)
+            .Select(s => s.GUID)
+            .ToHashSet();
 
         // Locked statuses wont be canceled by this
         if (preset.ApplyType is PresetApplyType.ReplaceAll)
@@ -302,18 +304,32 @@ public class ActorSM
                     Cancel(s, changeType);
 
         foreach (var id in preset.Statuses)
-            if (LociData.Statuses.FirstOrDefault(x => x.GUID == id) is { } s && !ignore.Contains(s.GUID))
-                AddOrUpdate(s.PreApply(), changeType, key: key);
+        {
+            // Skip ignored
+            if (ignore.Contains(id))
+                continue;
+            // Locate the status
+            if (LociData.Statuses.FirstOrDefault(x => x.GUID == id) is not { } s)
+                continue;
+            // Add or update.
+            if (AddOrUpdate(s, changeType, key: key) is { } appliedStatus)
+                applied.Add(appliedStatus);
+        }
+
+        return applied;
     }
 
     /// <summary>
     ///   Removes a preset from the status manager, and can be provided an unlock key.
     /// </summary>
     /// <remarks> Determine a good way to identify partial success indication later. </remarks>
-    public void RemovePreset(LociPreset p, ManagerChangeType changeType, uint key = 0)
+    public int RemovePreset(LociPreset p, ManagerChangeType changeType, uint key = 0)
     {
+        int removed = 0;
         foreach (var x in p.Statuses)
-            Cancel(x, changeType, key: key);
+            if (Cancel(x, changeType, key: key))
+                removed++;
+        return removed;
     }
 
     public byte[] BinarySerialize()

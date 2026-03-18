@@ -2,6 +2,7 @@
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using Loci.Data;
+using Loci.Services.Mediator;
 using LociApi.Enums;
 
 namespace Loci.Processors;
@@ -16,30 +17,13 @@ public unsafe partial class LociMemory
     {
         // Store previous, then perform the original to process the change.
         var prevGearsetIdx = module->CurrentGearsetIndex;
+        var prevJob = module->GetGearset(prevGearsetIdx)->ClassJob;
         var ret = ProcessGearsetChangeHook.Original(module, gearsetId, glamourPlateId);
         // Then get the set gearsetIdx
         var newGearsetEntry = module->GetGearset((int)gearsetId);
         var newJobId = newGearsetEntry->ClassJob;
 
-        _logger.LogDebug($"Gearset changed from {prevGearsetIdx} to {gearsetId} (ClassJob: {(JobType)newJobId})", LoggerType.Memory);
-        var gearsetEvents = LociEventData.Events
-            .Where(e =>
-            {
-                if (!e.Enabled || e.EventType is not LociEventType.JobChange)
-                    return false;
-                if (prevGearsetIdx == gearsetId)
-                    return false;
-                // Ensure correct logic
-                return (e.GearsetIdx == -1) 
-                    ? e.JobFlags is JobFlags.None || e.JobFlags.Has((JobFlags)(1UL << newJobId)) 
-                    : e.GearsetIdx == (short)gearsetId;
-            })
-            .OrderByDescending(e => e.Priority)
-            .ToList();
-
-        _logger.LogTrace($"Found {gearsetEvents.Count} entries to iterate", LoggerType.Memory);
-        gearsetEvents.ApplyFirstMatch();
-
+        _mediator.Publish(new GearsetChangedMessage(prevGearsetIdx, prevJob, (int)gearsetId, newJobId));
         return ret;
     }
 }

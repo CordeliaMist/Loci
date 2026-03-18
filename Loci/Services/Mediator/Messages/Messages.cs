@@ -6,22 +6,25 @@ namespace Loci.Services.Mediator;
 public enum FSChangeType { Created, Deleted, Renamed, Modified }
 public enum LociModule { Statuses, Presets, Events }
 
-/// <summary>
-///     Tells us when the client has changed territories or zones. Occurs after the player is valid and loaded. <para />
-///     Can make this SameThreadMessage if we want..
-/// </summary>
-public record TerritoryChanged(ushort PrevTerritory, ushort NewTerritory) : MessageBase;
-
-/// <summary>
-///     Whenever a watched object is created.
-/// </summary>
+// Essential to the CharaWatcher
 public record WatchedObjectCreated(IntPtr Address) : SameThreadMessage;
-
-/// <summary>
-///     Whenever a watched object is destroyed or unloaded.
-/// </summary>
 public record WatchedObjectDestroyed(IntPtr Address) : SameThreadMessage;
 
+
+/// <summary> If the processors for Loci should run or not. </summary>
+/// <remarks> This is a SameThreadMessage as it is linked to API calls and should be accurate. </remarks>
+public record EnabledStateChangeMessage(bool NewState) : SameThreadMessage;
+
+/// <summary> Tells us when the client has changed territories or zones. </summary>
+/// <remarks> This always occurs after the ClientPlayer is determined valid. </remarks>
+public record TerritoryChangedMessage(ushort PrevTerritory, ushort NewTerritory) : MessageBase;
+
+/// <summary> Informs us when the client changed gearsets and/or jobs. </summary>
+public record GearsetChangedMessage(int PrevGearsetIdx, byte PrevJobId, int NewGearsetIdx, byte NewJobId) : MessageBase;
+
+/// <summary> Occurs when an emote is performed. </summary>
+/// <remarks> Ensure on samethread so that the address remains valid. </remarks>
+public record EmotePerformedMessage(ushort EmoteId, IntPtr Caller, IntPtr Target) : SameThreadMessage;
 
 // DDS
 public record FolderUpdateManagers : MessageBase;
@@ -32,15 +35,7 @@ public record LociPresetChanged(FSChangeType Type, LociPreset Item, string? OldS
 public record LociEventChanged(FSChangeType Type, LociEvent Item, string? OldString = null) : MessageBase;
 public record ReloadCKFS(LociModule Module) : MessageBase;
 
-// Enable State
-public record NewEnabledStateMessage(bool NewState) : SameThreadMessage;
-
 // StatusManager
 public record ActorSMChanged(IntPtr Address, ManagerChangeType ChangeType) : SameThreadMessage;
 public record ApplyToTargetMessage(IntPtr TargetAddress, string TargetHost, List<LociStatusInfo> Data) : SameThreadMessage;
-
-// LociApiStatuses
 public record ChainTriggerHitMessage(IntPtr Address, Guid StatusId, ChainTrigger Trigger, ChainType ChainType, Guid ChainedId) : SameThreadMessage;
-
-// LociApiEvents
-public record EventPathMoved(Guid EventId, string OldPath, string NewPath) : SameThreadMessage;

@@ -1,11 +1,17 @@
+using CkCommons;
 using CkCommons.Gui;
+using CkCommons.Raii;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
 using Loci.Services.Mediator;
+using OtterGui.Text;
+using static Lumina.Data.Parsing.Layer.LayerCommon;
 
 namespace Loci.Gui;
 
@@ -31,15 +37,16 @@ public class SettingsTab
         _presetFileSystem = presetFS;
     }
 
-    public unsafe void DrawSettings()
+    public unsafe void DrawSettings(Vector2 region)
     {
+        var pos = ImGui.GetCursorPos();
         CkGui.FontText("Functionality", Fonts.Default150Percent);
         var enabled = _config.Current.Enabled;
         if (ImGui.Checkbox($"Enable Module", ref enabled))
         {
             _config.Current.Enabled = enabled;
             _config.Save();
-            _mediator.Publish(new NewEnabledStateMessage(enabled));
+            _mediator.Publish(new EnabledStateChangeMessage(enabled));
         }
         DrawIndentedEnables();
 
@@ -84,6 +91,32 @@ public class SettingsTab
         }
 
         DrawMigrate();
+
+        var buttonSize = new Vector2(150f * ImGuiHelpers.GlobalScale, 0);
+        ImGui.SetCursorPos(pos + new Vector2(region.X - buttonSize.X, 0));
+        using (ImRaii.Group())
+        {
+            using (ImRaii.PushColor(ImGuiCol.Button, 0xFFDA8972))
+                if (ImGui.Button("Discord Support", buttonSize))
+                    Util.OpenLink("https://discord.gg/QJy4zTqpMD");
+            CkGui.AttachToolTip("Opens the Loci support discord", CkCol.TriStateCross.Vec4Ref());
+            
+            using (ImRaii.PushColor(ImGuiCol.Button, 0xFFD5449D))
+                if (ImGui.Button("GitHub Page", buttonSize))
+                    Util.OpenLink("https://github.com/CordeliaMist/Loci");
+            CkGui.AttachToolTip($"View the GitHub repository for Loci");
+
+            using (var _ = CkRaii.FramedChildPaddedW("supported-plugins", buttonSize.X, ImUtf8.FrameHeightSpacing + ImUtf8.TextHeightSpacing * 2, 0, ImGui.GetColorU32(ImGuiCol.FrameBg)))
+            {
+                var width = ImGui.CalcTextSize("Supported Plugins").X;
+                var offset = (_.InnerRegion.X - width) / 2;
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
+                CkGui.TextUnderlined("Supported Plugins", CkCol.TriStateCheck.Vec4Ref());
+                ImGui.Spacing();
+                CkGui.CenterText("Sundouleia");
+                CkGui.CenterText("Dynamic Bridge");
+            }
+        }
     }
 
     private void DrawIndentedEnables()
@@ -133,7 +166,7 @@ public class SettingsTab
             return;
 
         ImGui.Separator();
-        CkGui.FontText("Data Migration", Fonts.Default150Percent);
+        CkGui.FontText("Data Import", Fonts.Default150Percent);
         var shiftAndCtrlPressed = ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl;
 
         if (oldDirExists)
@@ -146,7 +179,7 @@ public class SettingsTab
                     var statuses = GetOldMigrationFilePath("DefaultConfig.json");
                     if (File.Exists(statusFS) && File.Exists(statuses))
                     {
-                        _logger.LogInformation($"Migrating from {statusFS}");
+                        _logger.LogInformation($"Importing from {statusFS}");
                         var defaultJson = JObject.Parse(File.ReadAllText(statuses));
                         _data.MoodleStatusMigration(defaultJson);
                         _statusFileSystem.MergeWithMigratableFile(statusFS);
@@ -154,11 +187,11 @@ public class SettingsTab
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to migrate statuses");
+                    _logger.LogError(ex, $"Failed to Import statuses");
                 }
 
             }
-            CkGui.AttachToolTip("Migrate all statuses to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachToolTip("Import all statuses to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
             ImGui.SameLine();
             if (CkGui.IconTextButton(FAI.FileImport, "Presets (Moodles)", disabled: !shiftAndCtrlPressed))
             {
@@ -168,7 +201,7 @@ public class SettingsTab
                     var presets = GetOldMigrationFilePath("DefaultConfig.json");
                     if (File.Exists(presetFS) && File.Exists(presets))
                     {
-                        _logger.LogInformation($"Migrating from {presetFS}");
+                        _logger.LogInformation($"Importing from {presetFS}");
                         var defaultJson = JObject.Parse(File.ReadAllText(presets));
                         _data.MoodlePresetMigration(defaultJson);
                         // Then update the FS.
@@ -177,17 +210,14 @@ public class SettingsTab
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to migrate presets");
+                    _logger.LogError(ex, $"Failed to Import presets");
                 }
             }
-            CkGui.AttachToolTip("Migrate all presets to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachToolTip("Import all presets to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
         }
 
         if (sundDirExists)
         {
-            if (oldDirExists)
-                ImGui.SameLine();
-
             if (CkGui.IconTextButton(FAI.FileImport, "Statuses (Sundouleia)", disabled: !shiftAndCtrlPressed))
             {
                 try
@@ -196,7 +226,7 @@ public class SettingsTab
                     var statuses = Path.Combine(GetSundMigratableDirectoryPath(), "lociData.json");
                     if (File.Exists(statusFS) && File.Exists(statuses))
                     {
-                        _logger.LogInformation($"Migrating from {statusFS}");
+                        _logger.LogInformation($"Importing from {statusFS}");
                         var defaultJson = JObject.Parse(File.ReadAllText(statuses));
                         _data.SundStatusMigration(defaultJson);
                         _statusFileSystem.MergeWithMigratableFile(statusFS);
@@ -204,10 +234,10 @@ public class SettingsTab
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to migrate statuses");
+                    _logger.LogError(ex, $"Failed to Import statuses");
                 }
             }
-            CkGui.AttachToolTip("Migrate all statuses to Sundouleia.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachToolTip("Import all statuses from Sundouleia.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
 
             ImGui.SameLine();
             if (CkGui.IconTextButton(FAI.FileImport, "Presets (Sundouleia)", disabled: !shiftAndCtrlPressed))
@@ -218,7 +248,7 @@ public class SettingsTab
                     var presets = Path.Combine(GetSundMigratableDirectoryPath(), "lociData.json");
                     if (File.Exists(presetFS) && File.Exists(presets))
                     {
-                        _logger.LogInformation($"Migrating from {presetFS}");
+                        _logger.LogInformation($"Import from {presetFS}");
                         var defaultJson = JObject.Parse(File.ReadAllText(presets));
                         _data.SundPresetMigration(defaultJson);
                         _presetFileSystem.MergeWithMigratableFile(presetFS);
@@ -226,10 +256,10 @@ public class SettingsTab
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to migrate presets");
+                    _logger.LogError(ex, $"Failed to Import presets");
                 }
             }
-            CkGui.AttachToolTip("Migrate all presets to Sundouleia.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachToolTip("Import all presets from Sundouleia.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
         }
     }
 

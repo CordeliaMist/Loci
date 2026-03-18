@@ -11,6 +11,7 @@ using Loci.Data;
 using Loci.Services.Mediator;
 using OtterGui;
 using OtterGui.Text;
+using TerraFX.Interop.Windows;
 
 namespace Loci.DrawSystem;
 
@@ -39,7 +40,9 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
         UnsubscribeRightClickLeaf(RenameLeaf);
 
         SubscribeRightClickLeaf(CopyToClipboard);
+        SubscribeRightClickLeaf(ClonePreset);
         SubscribeRightClickLeaf(DeletePreset);
+        SubscribeRightClickLeaf(RenameLeaf);
         SubscribeRightClickLeaf(RenamePreset);
     }
 
@@ -64,6 +67,13 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
             var copyText = JsonConvert.SerializeObject(copy);
             ImGui.SetClipboardText(copyText);
         }
+    }
+
+    private void ClonePreset(PresetsFS.Leaf leaf)
+    {
+        if (ImGui.Selectable("Clone Preset", false))
+            _data.ClonePreset(leaf.Value, leaf.Value.Title);
+        CkGui.AttachToolTip("Create a clone of this preset");
     }
 
     private void RenamePreset(PresetsFS.Leaf leaf)

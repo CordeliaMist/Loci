@@ -52,7 +52,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
         _flyText = flyPopupText;
         _manager = manager;
 
-        Mediator.Subscribe<NewEnabledStateMessage>(this, _ => 
+        Mediator.Subscribe<EnabledStateChangeMessage>(this, _ => 
         {
             unsafe
             {

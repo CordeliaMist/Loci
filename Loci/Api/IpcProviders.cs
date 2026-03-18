@@ -22,6 +22,7 @@ public class IpcProviders : IDisposable
         [
             // IpcBase
             ApiVersion.Provider(Svc.PluginInterface, api),
+            TupleVersion.Provider(Svc.PluginInterface, api),
             IsEnabled.Provider(Svc.PluginInterface, api),
             EnabledStateChanged.Provider(Svc.PluginInterface, api),
 

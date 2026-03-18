@@ -39,6 +39,7 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
         UnsubscribeRightClickLeaf(RenameLeaf);
 
         SubscribeRightClickLeaf(CopyToClipboard);
+        SubscribeRightClickLeaf(CloneEvent);
         SubscribeRightClickLeaf(DeleteEvents);
         SubscribeRightClickLeaf(RenameLeaf);
         SubscribeRightClickLeaf(RenameEvents);
@@ -66,6 +67,13 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
             var copyText = JsonConvert.SerializeObject(copy);
             ImGui.SetClipboardText(copyText);
         }
+    }
+
+    private void CloneEvent(LociEventsFS.Leaf leaf)
+    {
+        if (ImGui.Selectable("Clone Event", false))
+            _data.CloneEvent(leaf.Value, leaf.Value.Title);
+        CkGui.AttachToolTip("Create a clone of this event");
     }
 
     private void RenameEvents(LociEventsFS.Leaf leaf)

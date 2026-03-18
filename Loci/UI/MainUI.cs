@@ -57,7 +57,7 @@ public class MainUI : WindowMediatorSubscriberBase
         // Draw the tab bar ontop
         _tabMenu.Draw(width);
 
-        using var _ = CkRaii.Child("selected", ImGui.GetContentRegionAvail());
+        using var _ = CkRaii.Child("selected", ImGui.GetContentRegionAvail(), wFlags: WFlags.NoScrollbar);
         switch (_tabMenu.TabSelection)
         {
             case LociUITabs.SelectedTab.Statuses:
@@ -73,7 +73,7 @@ public class MainUI : WindowMediatorSubscriberBase
                 _eventsTab.DrawSection(_.InnerRegion);
                 break;
             case LociUITabs.SelectedTab.Settings:
-                _settingsTab.DrawSettings();
+                _settingsTab.DrawSettings(_.InnerRegion);
                 break;
             case LociUITabs.SelectedTab.Logging:
                 _debugTab.DrawLoggers();

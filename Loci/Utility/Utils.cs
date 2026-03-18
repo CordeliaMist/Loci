@@ -147,34 +147,6 @@ public static class Utils
             EventType = eventInfo.EventType
         };
 
-    public static void ApplyFirstMatch(this List<LociEvent> candidates)
-    {
-        // Invoke the first match.
-        foreach (var match in candidates)
-        {
-            if (match.ReactionType is ChainType.Status)
-            {
-                if (LociData.Statuses.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not { } data)
-                    continue;
-                // Fail if already present.
-                if (LociManager.ClientSM.Statuses.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not null && !data.Modifiers.Has(Modifiers.StacksIncrease))
-                    continue;
-                // Apply
-                LociManager.ClientSM.AddOrUpdate(data.PreApply(), ManagerChangeType.ApplyRemove | ManagerChangeType.EventInvoked);
-                break;
-            }
-            else
-            {
-                if (LociData.Presets.FirstOrDefault(s => s.GUID == match.ReactionGUID) is not { } data)
-                    continue;
-                // Apply
-                var toApply = data.ApplyType = PresetApplyType.IgnoreExisting;
-                LociManager.ClientSM.ApplyPreset(data, ManagerChangeType.ApplyRemove | ManagerChangeType.EventInvoked);
-                break;
-            }
-        }
-    }
-
     public unsafe static List<string> GetFriendlist()
     {
         var ret = new List<string>();
@@ -332,6 +304,17 @@ public static class Utils
             KnownDirection.Other => "From Others",
             KnownDirection.OtherToSelf => "From others to You",
             KnownDirection.Any => "Any Filter",
+            _ => "UNK"
+        };
+
+    public static string ToName(this EventBehavior type)
+        => type switch
+        {
+            EventBehavior.Apply => "Apply",
+            EventBehavior.ApplyAuthorative => "Apply while overwriting existing",
+            EventBehavior.InThatCondition => "Apply only while satisfying the condition",
+            EventBehavior.InThatConditionAuthorative => "Apply only while satisfying the condition, overwriting existing",
+            EventBehavior.Remove => "Remove",
             _ => "UNK"
         };
 

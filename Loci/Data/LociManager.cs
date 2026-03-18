@@ -35,7 +35,7 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
         // Process object creation here
         Mediator.Subscribe<WatchedObjectCreated>(this, _ => OnObjectCreated(_.Address));
         Mediator.Subscribe<WatchedObjectDestroyed>(this, _ => OnObjectDeleted(_.Address));
-        Mediator.Subscribe<TerritoryChanged>(this, _ => OnTerritoryChange(_.PrevTerritory, _.NewTerritory));
+        Mediator.Subscribe<TerritoryChangedMessage>(this, _ => OnTerritoryChange(_.PrevTerritory, _.NewTerritory));
         Svc.ClientState.Login += OnLogin;
 
         if (Svc.ClientState.IsLoggedIn)
