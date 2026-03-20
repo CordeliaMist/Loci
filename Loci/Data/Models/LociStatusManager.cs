@@ -312,7 +312,7 @@ public class ActorSM
             if (LociData.Statuses.FirstOrDefault(x => x.GUID == id) is not { } s)
                 continue;
             // Add or update.
-            if (AddOrUpdate(s, changeType, key: key) is { } appliedStatus)
+            if (AddOrUpdate(s.PreApply(), changeType, key: key) is { } appliedStatus)
                 applied.Add(appliedStatus);
         }
 
