@@ -357,10 +357,13 @@ public class EventService : DisposableMediatorSubscriberBase
         {
             if (candidate.ReactionType is ChainType.Status && TryApplyStatusEvent(candidate, out var appliedStatus))
             {
-                Logger.LogDebug($"Applied zone change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                 // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
+                {
+                    Logger.LogDebug($"Applied zone change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                     _lastZoneCondition = new EventCache(candidate.GUID, appliedStatus);
+                }
+
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
@@ -431,7 +434,7 @@ public class EventService : DisposableMediatorSubscriberBase
             }
         }
 
-        bool IsValid(LociEvent e) 
+        bool IsValid(LociEvent e)
             => e.Enabled && e.EventType is LociEventType.OnlineStatus && e.IndicatedID == newOnlineStatus;
     }
 

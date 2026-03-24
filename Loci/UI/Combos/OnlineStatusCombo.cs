@@ -13,8 +13,8 @@ public sealed class OnlineStatusCombo : CkFilterComboCache<ParsedOnlineStatus>
     private float _iconScale = 1.0f;
     private uint _curStatusId;
 
-    // 44 = Trial Adventurer (unused), 45/46 = Free/Grand Company (Unknown)
-    private static readonly List<uint> ExcludedIds = [44u, 45u, 46u];
+    // 44 = Trial Adventurer (unused), 45/46 = Free/Grand Company (Unknown), 47 = "fake" online for friends list?
+    private static readonly List<uint> ExcludedIds = [44u, 45u, 46u, 47u];
 
     public OnlineStatusCombo(ILogger log, float scale)
         : base(() => [ ..GameDataSvc.OnlineStatus.Values

@@ -10,7 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Loci.Services;
 
 public unsafe class CharaWatcher : IHostedService
-{    
+{
     internal Hook<Character.Delegates.OnInitialize> OnCharaInitializeHook;
     internal Hook<Character.Delegates.Dtor> OnCharaDestroyHook;
     internal Hook<Character.Delegates.Terminate> OnCharaTerminateHook;
@@ -28,7 +28,7 @@ public unsafe class CharaWatcher : IHostedService
         OnCharaInitializeHook = Svc.Hook.HookFromAddress<Character.Delegates.OnInitialize>((nint)Character.StaticVirtualTablePointer->OnInitialize, InitializeCharacter);
         OnCharaTerminateHook = Svc.Hook.HookFromAddress<Character.Delegates.Terminate>((nint)Character.StaticVirtualTablePointer->Terminate, TerminateCharacter);
         OnCharaDestroyHook = Svc.Hook.HookFromAddress<Character.Delegates.Dtor>((nint)Character.StaticVirtualTablePointer->Dtor, DestroyCharacter);
-        
+
         OnCharaInitializeHook.SafeEnable();
         OnCharaTerminateHook.SafeEnable();
         OnCharaDestroyHook.SafeEnable();
@@ -115,7 +115,7 @@ public unsafe class CharaWatcher : IHostedService
     }
 
     /// <summary>
-    ///     Entry point for initialized characters. Should interface with anything 
+    ///     Entry point for initialized characters. Should interface with anything
     ///     wishing to detect created objects. <para />
     ///     Doing so will ensure any final lines are processed prior to the address invalidating.
     /// </summary>
@@ -145,7 +145,11 @@ public unsafe class CharaWatcher : IHostedService
     {
         try { OnCharaInitializeHook!.OriginalDisposeSafe(chara); }
         catch (Exception e) { _logger.LogError($"Error: {e}"); }
-        Svc.Framework.Run(() => NewCharacterRendered(chara));
+
+        _ = Svc.Framework.Run(() =>
+        {
+            NewCharacterRendered(chara);
+        });
     }
 
     private unsafe void TerminateCharacter(Character* chara)
