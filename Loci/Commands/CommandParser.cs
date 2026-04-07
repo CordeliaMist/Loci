@@ -4,8 +4,8 @@
 ///     Parses command strings via <see cref="CommandDefinition"/>'s, using their ENTITY:ACTION for lookup. <para />
 ///     Results are tokenized and returned as a <see cref="Loci.ParsedCommand"/>
 /// </summary>
-/// <remarks> 
-///     This currently does not have any abstraction, but could easily be implemented 
+/// <remarks>
+///     This currently does not have any abstraction, but could easily be implemented
 ///     if we wanted to make this possible for other CK Projects.
 /// </remarks>
 public sealed class CommandParser
@@ -66,8 +66,11 @@ public sealed class CommandParser
     public void ClearDefinitions()
         => _definitions.Clear();
 
+    public List<string> GetAllEntities()
+        => [.._definitions.Keys.Select(k => k.Split(':')[0]).Distinct()];
+
     /// <summary>
-    ///     Attempts to parse a command. Returns the parsed result, 
+    ///     Attempts to parse a command. Returns the parsed result,
     ///     containing data about the outcome.
     /// </summary>
     public ParseResult ParseArguments(string commandArgs)
@@ -76,14 +79,14 @@ public sealed class CommandParser
         // ex: "group add My Group -user John" -> ["group", "add", "My Group -user John" ]
         var split = commandArgs.Split(' ', 3, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        // If the split is less than 3  we should show the appropriate help text.        
+        // If the split is less than 3  we should show the appropriate help text.
         switch (split.Length)
         {
             case 2: return new(ParseOutcome.NoParamaters, null);
             case 1: return new(ParseOutcome.NoAction);
             case 0: return new(ParseOutcome.NoEntity);
         }
-        
+
         var entity = split[0]; // request, group, or folder
         var action = split[1]; // send, accept, reject, create, add, remove, move, merge
         var untokenizedArgs = split[2];
@@ -151,7 +154,7 @@ public sealed class CommandParser
     /// <summary>
     ///     Takes a CLI formatted command and tokenizes the outcome. <br />
     ///     Public for uses beyond parsing commands, but should generally be
-    ///     called with the ENTITY and ACTION stripped from 
+    ///     called with the ENTITY and ACTION stripped from
     ///     the string to tokenize correctly
     /// </summary>
     /// <param name="input"> the string to be tokenized </param>
@@ -192,4 +195,3 @@ public sealed class CommandParser
         return tokens;
     }
 }
-
