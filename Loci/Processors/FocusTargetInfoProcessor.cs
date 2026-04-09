@@ -85,7 +85,8 @@ public unsafe class FocusTargetInfoProcessor
 
             var chara = (Character*)target;
             if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is { } statusList)
-                NumVanillaStatuses = statusList.Count(x => x.StatusId != 0 && !LociProcessor.SpecialStatuses.Contains(x.StatusId));
+                NumVanillaStatuses = statusList.Count(x =>
+                    x.GameData.Value.Icon != 0 && !LociProcessor.SpecialStatuses.Contains(x.StatusId));
 
             _logger.LogTrace($"TargetInfo Requested update: {NumVanillaStatuses}", LoggerType.Processors);
         }

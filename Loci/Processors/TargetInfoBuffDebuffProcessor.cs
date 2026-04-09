@@ -84,7 +84,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
 
             var chara = (Character*)target;
             if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is { } statusList)
-                NumVanillaStatuses = statusList.Count(x => x.StatusId != 0);
+                NumVanillaStatuses = statusList.Count(s => s.GameData.Value.Icon != 0);
         }
         else
         {
@@ -179,7 +179,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
 
         if (hideAll)
             return;
-        
+
         // If a companion, force visibility
         if (target->ObjectKind is ObjectKind.Companion)
         {
