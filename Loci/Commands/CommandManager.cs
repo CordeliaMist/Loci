@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Windows.Forms;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text.SeStringHandling;
 using Loci.Data;
@@ -9,7 +8,6 @@ using Loci.Services;
 using Loci.Services.Mediator;
 using LociApi.Enums;
 using OtterGui.Classes;
-using TerraFX.Interop.Windows;
 
 namespace Loci.Commands;
 
@@ -21,16 +19,12 @@ public sealed class CommandManager : IDisposable
 
     private readonly ILogger<CommandManager> _logger;
     private readonly LociMediator _mediator;
-    private readonly MainConfig _config;
-    private readonly LociUITabs _tabMenu;
     private readonly LociManager _manager;
 
-    public CommandManager(ILogger<CommandManager> logger, LociMediator mediator, MainConfig config, LociUITabs tabMenu, LociManager manager)
+    public CommandManager(ILogger<CommandManager> logger, LociMediator mediator, LociManager manager)
     {
         _logger = logger;
         _mediator = mediator;
-        _config = config;
-        _tabMenu = tabMenu;
         _manager = manager;
 
         // Init the parser with our builder
@@ -100,7 +94,7 @@ public sealed class CommandManager : IDisposable
 
             // Event Logic (TODO)
             case "events":
-                HandleEventLogic(res.ParsedData);
+                HandleEventLogic();
                 break;
         }
     }
@@ -392,7 +386,7 @@ public sealed class CommandManager : IDisposable
     //}
 
 
-    private void HandleEventLogic(ParsedCommand parsed)
+    private void HandleEventLogic()
     {
         CommandError("Logic not implemented yet.");
     }
@@ -546,9 +540,8 @@ public sealed class CommandManager : IDisposable
     private void ShowEventHelp(string? action, string? badArg)
     {
         // Not yet implemented
-        return;
         // For generic help
-        if (string.IsNullOrEmpty(action))
+/*        if (string.IsNullOrEmpty(action))
         {
             Svc.Chat.Print(new SeStringBuilder()
                 .AddText("Loci", 527, true)
@@ -597,7 +590,7 @@ public sealed class CommandManager : IDisposable
                 Svc.Chat.Print(new SeStringBuilder().AddGreen("    》 Name: ").AddText("The Group(s) being merged").BuiltString);
                 Svc.Chat.Print(new SeStringBuilder().AddBlue("    》 Params: ").AddText("-target").BuiltString);
                 break;
-        }
+        }*/
     }
 
     private Dictionary<string, CommandDefinition> InitDefinitions()

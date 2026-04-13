@@ -80,7 +80,7 @@ public class StatusesTab : IDisposable
         ImGui.TableNextColumn();
         _selector.DrawFilterRow(SELECTOR_WIDTH);
         _selector.DrawList(SELECTOR_WIDTH);
-        
+
         ImGui.TableNextColumn();
         DrawSelectedStatus();
     }
@@ -177,7 +177,7 @@ public class StatusesTab : IDisposable
             ImGui.TableNextColumn();
             CkGui.TextFrameAligned($"ID:");
             CkGui.HelpText("Used in commands to apply loci.");
-            
+
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled)))
@@ -196,7 +196,7 @@ public class StatusesTab : IDisposable
             {
                 CkGui.ColorTextFrameAlignedInline($"#{status.IconID}", ImGuiColors.DalamudGrey2);
             }
-            
+
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             var selinfo = Utils.GetIconData((uint)status.IconID);
@@ -208,7 +208,7 @@ public class StatusesTab : IDisposable
                 ImGui.SetCursorPos(cursor);
                 if (_iconSelector.Draw(status))
                 {
-                    Svc.Logger.Verbose($"Selected new Status Icon: {status.IconID}"); 
+                    Svc.Logger.Verbose($"Selected new Status Icon: {status.IconID}");
                     CleanupStatus(status);
                     _data.MarkStatusModified(status);
                 }
@@ -227,7 +227,7 @@ public class StatusesTab : IDisposable
             ImGui.TableNextColumn();
             CkGui.TextFrameAligned($"VFX path:");
             CkGui.HelpText("You may select a custom VFX to play upon application.");
-            
+
             ImGui.TableNextColumn();
             DrawVfxCombo(status, ImGui.GetContentRegionAvail().X);
 
@@ -484,7 +484,7 @@ public class StatusesTab : IDisposable
             }
             ImGui.EndCombo();
         }
-        
+
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         CkGui.TextFrameAligned($"Stack Steps:");
@@ -522,7 +522,7 @@ public class StatusesTab : IDisposable
             ImGui.TableNextColumn();
             CkGui.TextFrameAligned($"Chaining Behavior:");
             CkGui.HelpText("How stacks from this status carry to the chained status.", true);
-            
+
             ImGui.TableNextColumn();
             var moveStacks = status.Modifiers.Has(Modifiers.StacksMoveToChain);
             if (ImGui.Checkbox("Transfer Stacks", ref moveStacks))
@@ -561,14 +561,14 @@ public class StatusesTab : IDisposable
         ImGui.Spacing();
         using var t = ImRaii.Table("##dispelling", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame);
         if (!t) return;
-        
+
         ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthFixed, leftW);
         ImGui.TableSetupColumn("Field", ImGuiTableColumnFlags.WidthStretch);
-        
+
         ImGui.TableNextColumn();
-        CkGui.TextFrameAligned("Dispelable:");
-        CkGui.HelpText("Makes the status dispelable. Functionality works when the option 'Statuses can be Esunad' is enabled in settings.");
-        
+        CkGui.TextFrameAligned("Dispellable:");
+        CkGui.HelpText("Shows a blue bar over the status. If \"Allow esunable statuses\" is enabled, this status can be removed with Esuna.");
+
         ImGui.TableNextColumn();
         var canDispel = status.Modifiers.Has(Modifiers.CanDispel);
         if (ImGui.Checkbox("##dispel", ref canDispel))
@@ -576,13 +576,13 @@ public class StatusesTab : IDisposable
             status.Modifiers.Set(Modifiers.CanDispel, canDispel);
             _data.MarkStatusModified(status);
         }
-        
+
         if (canDispel)
         {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             CkGui.TextFrameAligned($"Allowed Dispeller:");
-            CkGui.HelpText("An optional field to spesify who the status must be dispelled by, preventing others from doing so.", true);
+            CkGui.HelpText("An optional field to specify who the status must be dispelled by, preventing others from doing so.", true);
 
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);

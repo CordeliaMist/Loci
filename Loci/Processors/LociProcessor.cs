@@ -52,7 +52,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
         _flyText = flyPopupText;
         _manager = manager;
 
-        Mediator.Subscribe<EnabledStateChangeMessage>(this, _ => 
+        Mediator.Subscribe<EnabledStateChangeMessage>(this, _ =>
         {
             unsafe
             {
@@ -183,18 +183,23 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
                 // Deterministic Logic
                 if (x.ShouldExpireOnChain())
                     x.ExpiresAt = 0;
-                
+
                 if (x.HadNaturalTimerFalloff() && x.ChainTrigger is ChainTrigger.TimerExpired)
                     x.ApplyChain = true;
 
                 // Get the expire time.
                 bool timeExpired = x.ExpiresAt - Utils.Time <= 0;
-                                
+
                 // Process status removal.
                 if (timeExpired || x.ClickedOff)
                 {
                     EnsureRemTextWasShown(sm, x);
                     removed.Add(x);
+                    if (x is { ClickedOff: true, ChainTrigger: ChainTrigger.ClickedOff })
+                    {
+                        doChainApply.Add(x);
+                        x.ApplyChain = true;
+                    }
                 }
                 else
                 {
@@ -477,7 +482,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
 
         var addr = (nint)(container->GetAsAtkComponentNode()->Component);
         // _logger.LogDebug($"- = - {MemoryHelper.ReadStringNullTerminated((nint)(addon->Name))} - = -");
-        
+
         // Process how we handle the hovered tooltip
         if (HoveringOver == addr && status.TooltipShown == -1)
         {
@@ -485,11 +490,11 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
             foreach (var manager in LociManager.Managers)
                 foreach (var s in manager.Value.Statuses)
                     s.TooltipShown = -1;
-            
+
             // Then hide the tooltip for this ID.
             status.TooltipShown = addon->Id;
             AtkStage.Instance()->TooltipManager.HideTooltip(addon->Id);
-            
+
             // Get what to write to this tooltip for the title and description, using our tooltip memory
             var str = status.Title;
             if (status.Description != "")
@@ -533,19 +538,19 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
         var seconds = MathF.Ceiling((float)rem / 1000f);
         if (seconds <= 59)
             return seconds.ToString();
-        
+
         var minutes = MathF.Floor((float)seconds / 60f);
         if (minutes <= 59)
             return $"{minutes}m";
-        
+
         var hours = MathF.Floor((float)minutes / 60f);
         if (hours <= 59)
             return $"{hours}h";
-        
+
         var days = MathF.Floor((float)hours / 24f);
         if (days <= 9)
             return $"{days}d";
-        
+
         return $">9d";
     }
 
