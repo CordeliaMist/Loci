@@ -19,7 +19,7 @@ jobs:
         run: |
           # Try to get version number from the CSProj file and load it for later steps.
           $out = ([xml](Get-Content './Loci/Loci.csproj')).Project.PropertyGroup.Version
-          Write-Output "Parsed version `"$ver`" from Loci.csproj."
+          Write-Output "Parsed version `"$out`" from Loci.csproj."
           Write-Output "ver=$out".Trim() | Out-File -FilePath "$env:GITHUB_OUTPUT" -Encoding ascii
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
