@@ -48,6 +48,7 @@ public sealed class MoodlesWatcher : DisposableMediatorSubscriberBase
         ManagedModified.Subscribe(OnManagerModified);
 
         Svc.ClientState.Login += OnLogin;
+        Svc.ClientState.Logout += OnLogout;
         if (Svc.ClientState.IsLoggedIn)
             OnLogin();
 
@@ -80,6 +81,7 @@ public sealed class MoodlesWatcher : DisposableMediatorSubscriberBase
     {
         base.Dispose(disposing);
         Svc.ClientState.Login -= OnLogin;
+        Svc.ClientState.Logout -= OnLogout;
         ManagedModified.Unsubscribe(OnManagerModified);
     }
 
@@ -90,6 +92,13 @@ public sealed class MoodlesWatcher : DisposableMediatorSubscriberBase
         // Init data
         CheckAPI();
         CheckManagers();
+    }
+
+    private async void OnLogout(int type, int code)
+    {
+        // API becomes unavailable on logout, and we re-check on login
+        APIAvailable = false;
+        ClearManagers();
     }
 
     private async void OnObjectCreated(nint charaAddr)
@@ -125,7 +134,7 @@ public sealed class MoodlesWatcher : DisposableMediatorSubscriberBase
         var newData = GetManagerInfo.InvokeFunc(charaAddr);
         if (newData is null)
             return;
-        
+
         int[] counts = [0, 0, 0];
         foreach (var item in newData)
         {
