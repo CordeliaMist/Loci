@@ -230,10 +230,11 @@ public class EventService : DisposableMediatorSubscriberBase
         {
             if (candidate.ReactionType is ChainType.Status && TryApplyStatusEvent(candidate, out var appliedStatus))
             {
-                Logger.LogDebug($"Applied job change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
-                // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
+                {
+                    Logger.LogDebug($"Applied job change event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                     _lastJobCondition = new EventJobCache(candidate.GUID, candidate.GearsetIdx == -1, candidate.JobFlags, candidate.GearsetIdx, appliedStatus);
+                }
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
@@ -290,10 +291,11 @@ public class EventService : DisposableMediatorSubscriberBase
         {
             if (candidate.ReactionType is ChainType.Status && TryApplyStatusEvent(candidate, out var appliedStatus))
             {
-                Logger.LogDebug($"Applied emote event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
-                // Set the last condition if the applied statuses had anything. Otherwise, break out.
                 if (appliedStatus.Count > 0)
+                {
+                    Logger.LogDebug($"Applied emote event: {candidate.Title}, applying status {appliedStatus[0].Title}.", LoggerType.Events);
                     _lastEmoteCondition = new EventCache(candidate.GUID, appliedStatus);
+                }
                 break;
             }
             else if (candidate.ReactionType is ChainType.Preset && TryApplyPresetEvent(candidate, out var appliedStatuses))
@@ -426,10 +428,7 @@ public class EventService : DisposableMediatorSubscriberBase
             {
                 Logger.LogDebug($"Applied OnlineStatus change event: {candidate.Title} with {appliedStatuses.Count} statuses applied from preset.", LoggerType.Events);
                 if (appliedStatuses.Count > 0)
-                {
-                    Logger.LogDebug($"Setting last OnlineStatus condition with event {candidate.Title} and {appliedStatuses.Count} statuses from preset.", LoggerType.Events);
                     _lastOnlineStatusCondition = new EventCache(candidate.GUID, appliedStatuses);
-                }
                 break;
             }
         }
@@ -445,14 +444,18 @@ public class EventService : DisposableMediatorSubscriberBase
         var flags = ManagerChangeType.ApplyRemove | ManagerChangeType.EventInvoked;
 
         if (LociData.Statuses.FirstOrDefault(s => s.GUID == e.ReactionGUID) is not { } data)
+        {
+            Logger.LogDebug($"Status with GUID {e.ReactionGUID} not found for event {e.Title}.", LoggerType.Events);
             return false;
+        }
 
         var existing = LociManager.ClientSM.Statuses.FirstOrDefault(s => s.GUID == data.GUID);
 
         switch (e.Behavior)
         {
             case EventBehavior.Apply:
-                if (existing is not null) return false;
+                if (existing is not null && !existing.Modifiers.HasAny(Modifiers.StacksIncrease))
+                    return false;
                 return LociManager.ClientSM.AddOrUpdate(data.PreApply(), flags) is not null;
 
             case EventBehavior.ApplyAuthorative:

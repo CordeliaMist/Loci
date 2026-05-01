@@ -56,7 +56,7 @@ public sealed class SMDrawer : DynamicDrawer<ActorSM>
     //    {
     //        if (CkGui.IconTextButton(FAI.Cog, "Settings", isInPopup: !_cache.FilterConfigOpen))
     //            _cache.FilterConfigOpen = !_cache.FilterConfigOpen;
-    //        CkGui.AttachToolTip("Configure preferences for draw folders.");
+    //        CkGui.AttachTooltip("Configure preferences for draw folders.");
     //    }
     //}
 
@@ -76,7 +76,7 @@ public sealed class SMDrawer : DynamicDrawer<ActorSM>
         CkGui.FramedIconText(folder.IsOpen ? FAI.CaretDown : FAI.CaretRight);
         CkGui.ColorTextFrameAlignedInline(folder.Name, folder.NameColor);
         CkGui.ColorTextFrameAlignedInline($"[{folder.TotalChildren}]", ImGuiColors.DalamudGrey2);
-        CkGui.AttachToolTip(folder.BracketTooltip);
+        CkGui.AttachTooltip(folder.BracketTooltip);
 
         var endX = ImGui.GetWindowContentRegionMin().X + CkGui.GetWindowContentRegionWidth();
         endX -= CkGui.IconButtonSize(FAI.EyeSlash).X;
@@ -86,7 +86,7 @@ public sealed class SMDrawer : DynamicDrawer<ActorSM>
             if (!_cache.IncognitoFolders.Remove(folder.Name))
                 _cache.IncognitoFolders.Add(folder.Name);
         }
-        CkGui.AttachToolTip("Toggles Anonymous View");
+        CkGui.AttachTooltip("Toggles Anonymous View");
 
         ImGui.SameLine(pos.X);
         if (ImGui.InvisibleButton($"{Label}_node_{folder.ID}", new(endX - pos.X, region.Y)))

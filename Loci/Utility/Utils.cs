@@ -472,7 +472,7 @@ public static class Utils
     public static void ShowFormattingInfo()
     {
         CkGui.FramedHoverIconText(FAI.Code, LociCol.Gold.Uint());
-        CkGui.AttachToolTip($"This supports formatting tags." +
+        CkGui.AttachTooltip($"This supports formatting tags." +
             $"--NL----COL--Colors:--COL-- [color=red]...[/color], [color=5]...[/color]" +
             $"--NL----COL--Glow:--COL-- [glow=blue]...[/glow], [glow=7]...[/glow]" +
             $"--NL----COL--Italics:--COL-- [i]...[/i]" +

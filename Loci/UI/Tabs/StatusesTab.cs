@@ -144,7 +144,7 @@ public class StatusesTab : IDisposable
             // Perform without any validation
             if (CkGui.IconTextButton(FAI.Crosshairs, $"Apply to {chara->NameString}", disabled: chara->ObjectKind is not (ObjectKind.Pc or ObjectKind.Companion)))
                 sm.AddOrUpdate(status.PreApply(), ManagerChangeType.ApplyRemove);
-            CkGui.AttachToolTip($"Applies the status to the target actor!--SEP----COL--Accepts Players and Minions--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachTooltip($"Applies the status to the target actor!--SEP----COL--Accepts Players and Minions--COL--", ImGuiColors.DalamudOrange);
         }
         else
         {
@@ -190,7 +190,7 @@ public class StatusesTab : IDisposable
             {
                 ImUtf8.SameLineInner();
                 CkGui.FramedHoverIconText(FAI.ExclamationTriangle, CkCol.FavoriteHovered.Uint(), CkCol.Favorite.Uint());
-                CkGui.AttachToolTip("You must select an icon!");
+                CkGui.AttachTooltip("You must select an icon!");
             }
             else
             {
@@ -316,7 +316,7 @@ public class StatusesTab : IDisposable
             {
                 ImUtf8.SameLineInner();
                 CkGui.FramedHoverIconText(FAI.ExclamationTriangle, CkCol.FavoriteHovered.Uint(), CkCol.Favorite.Uint());
-                CkGui.AttachToolTip("Duration must be at least 1 second");
+                CkGui.AttachTooltip("Duration must be at least 1 second");
             }
 
             ImGui.TableNextColumn();
@@ -326,7 +326,7 @@ public class StatusesTab : IDisposable
                 status.NoExpire = isPerma;
                 _data.MarkStatusModified(status);
             }
-            CkGui.AttachToolTip("Is no time limit should exist for this status");
+            CkGui.AttachTooltip("Is no time limit should exist for this status");
 
             if (!status.NoExpire)
             {
@@ -345,7 +345,7 @@ public class StatusesTab : IDisposable
                     // Clear the time string regardless
                     _tmpTimeStr = null;
                 }
-                CkGui.AttachToolTip($"The duration this status is applied for.");
+                CkGui.AttachTooltip($"The duration this status is applied for.");
             }
 
             ImGui.TableNextRow();
@@ -359,7 +359,7 @@ public class StatusesTab : IDisposable
                 status.Modifiers.Set(Modifiers.PersistExpireTime, persistTime);
                 _data.MarkStatusModified(status);
             }
-            CkGui.AttachToolTip("When enabled, any reapplication of this loci keeps it's expire time.");
+            CkGui.AttachTooltip("When enabled, any reapplication of this loci keeps it's expire time.");
 
             ImGui.EndTable();
         }
@@ -513,7 +513,7 @@ public class StatusesTab : IDisposable
             status.Modifiers.Set(Modifiers.StacksRollOver, stacksRoll);
             _data.MarkStatusModified(status);
         }
-        CkGui.AttachToolTip("When a stack reaches its cap, it starts over and counts up again.", true);
+        CkGui.AttachTooltip("When a stack reaches its cap, it starts over and counts up again.", true);
 
         // Handle chained status behavior if configured.
         if (status.ChainedGUID != Guid.Empty)
@@ -538,7 +538,7 @@ public class StatusesTab : IDisposable
                 status.Modifiers.Set(Modifiers.StacksCarryToChain, carryStacks);
                 _data.MarkStatusModified(status);
             }
-            CkGui.AttachToolTip("When the reapplication increase exceeds the max stacks, the remainder is added to the chained status.");
+            CkGui.AttachTooltip("When the reapplication increase exceeds the max stacks, the remainder is added to the chained status.");
 
             ImGui.SameLine();
             var persist = status.Modifiers.Has(Modifiers.PersistAfterTrigger);
@@ -547,7 +547,7 @@ public class StatusesTab : IDisposable
                 status.Modifiers.Set(Modifiers.PersistAfterTrigger, persist);
                 _data.MarkStatusModified(status);
             }
-            CkGui.AttachToolTip("Keeps this loci after chain is triggered.");
+            CkGui.AttachTooltip("Keeps this loci after chain is triggered.");
         }
     }
 
@@ -612,7 +612,7 @@ public class StatusesTab : IDisposable
             status.CustomFXPath = string.Empty;
             _data.MarkStatusModified(status);
         }
-        CkGui.AttachToolTip("Select a custom VFX that summons upon application.");
+        CkGui.AttachTooltip("Select a custom VFX that summons upon application.");
     }
 
     // When a status is changed, it should be cleaned up to respect the new properties.

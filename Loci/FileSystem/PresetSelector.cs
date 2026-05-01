@@ -53,7 +53,7 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
         using (ImRaii.Disabled(!ImGui.GetIO().KeyShift))
             if (ImGui.Selectable("Delete Preset"))
                 _data.DeletePreset(leaf.Value);
-        CkGui.AttachToolTip("Delete this preset.--SEP----COL--Must be holding SHIFT--COL--", ImGuiColors.DalamudOrange);
+        CkGui.AttachTooltip("Delete this preset.--SEP----COL--Must be holding SHIFT--COL--", ImGuiColors.DalamudOrange);
     }
 
     private void CopyToClipboard(PresetsFS.Leaf leaf)
@@ -73,7 +73,7 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
     {
         if (ImGui.Selectable("Clone Preset", false))
             _data.ClonePreset(leaf.Value, leaf.Value.Title);
-        CkGui.AttachToolTip("Create a clone of this preset");
+        CkGui.AttachTooltip("Create a clone of this preset");
     }
 
     private void RenamePreset(PresetsFS.Leaf leaf)
@@ -90,7 +90,7 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
                 _data.MarkPresetModified(leaf.Value);
             ImGui.CloseCurrentPopup();
         }
-        CkGui.AttachToolTip("Enter a new preset name..");
+        CkGui.AttachTooltip("Enter a new preset name..");
 
         CkRichText.Text(currentName, 6);
     }
@@ -151,12 +151,12 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
                 Log.Warning($"Failed to import preset from clipboard: {ex.Message}");
             }
         }
-        CkGui.AttachToolTip("Import a preset copied from your clipboard.");
+        CkGui.AttachTooltip("Import a preset copied from your clipboard.");
 
         ImGui.SameLine(0, 1);
         if (CkGui.IconButton(FAI.Plus, inPopup: true))
             ImGui.OpenPopup("##NewPreset");
-        CkGui.AttachToolTip("Create a new LociPreset.");
+        CkGui.AttachTooltip("Create a new LociPreset.");
 
         ImGui.SameLine(0, 1);
         DrawFolderButton();

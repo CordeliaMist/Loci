@@ -202,7 +202,7 @@ public class IconDataSelector
             if (LociIcon.TryGetGameIcon(info.IconID, false, out var wrap))
             {
                 ImGui.Image(wrap.Handle, LociIcon.Size);
-                CkGui.AttachToolTip($"{info.IconID}--SEP----COL--{info.Description}--COL--", ImGuiColors.DalamudGrey2);
+                CkGui.AttachTooltip($"{info.IconID}--SEP----COL--{info.Description}--COL--", ImGuiColors.DalamudGrey2);
 
                 ImGui.SameLine();
                 if (ImGui.RadioButton($"{info.Name}##{info.IconID}", curIconId == info.IconID))

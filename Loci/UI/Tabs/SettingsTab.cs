@@ -119,12 +119,12 @@ public class SettingsTab
             using (ImRaii.PushColor(ImGuiCol.Button, 0xFFDA8972))
                 if (ImGui.Button("Discord Support", buttonSize))
                     Util.OpenLink("https://discord.gg/QJy4zTqpMD");
-            CkGui.AttachToolTip("Opens the Loci support discord", CkCol.TriStateCross.Vec4Ref());
+            CkGui.AttachTooltip("Opens the Loci support discord", CkCol.TriStateCross.Vec4Ref());
             
             using (ImRaii.PushColor(ImGuiCol.Button, 0xFFD5449D))
                 if (ImGui.Button("GitHub Page", buttonSize))
                     Util.OpenLink("https://github.com/CordeliaMist/Loci");
-            CkGui.AttachToolTip($"View the GitHub repository for Loci");
+            CkGui.AttachTooltip($"View the GitHub repository for Loci");
         }
     }
 
@@ -143,14 +143,14 @@ public class SettingsTab
             _config.Current.SheVfxEnabled = vfxOn;
             _config.Save();
         }
-        CkGui.AttachToolTip("If VFX are applied on Loci Status application");
+        CkGui.AttachTooltip("If VFX are applied on Loci Status application");
 
         if (ImGui.Checkbox($"Restrict VFX", ref vfxLimited))
         {
             _config.Current.SheVfxRestricted = vfxLimited;
             _config.Save();
         }
-        CkGui.AttachToolTip("Restricts Vfx to only friends, party and nearby actors");
+        CkGui.AttachTooltip("Restricts Vfx to only friends, party and nearby actors");
 
         if (ImGui.Checkbox($"Fly/Popup Text", ref flyTextOn))
         {
@@ -164,7 +164,7 @@ public class SettingsTab
             _config.Current.FlyTextLimit = flyTextLimit;
             _config.Save();
         }
-        CkGui.AttachToolTip("How many Fly/Popup Texts can be active simultaneously.");
+        CkGui.AttachTooltip("How many Fly/Popup Texts can be active simultaneously.");
     }
 
     private void DrawMigrate()
@@ -199,7 +199,7 @@ public class SettingsTab
                 }
 
             }
-            CkGui.AttachToolTip("Import all statuses to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachTooltip("Import all statuses to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
             ImGui.SameLine();
             if (CkGui.IconTextButton(FAI.FileImport, "Presets (Moodles)", disabled: !shiftAndCtrlPressed))
             {
@@ -221,7 +221,7 @@ public class SettingsTab
                     _logger.LogError(ex, $"Failed to Import presets");
                 }
             }
-            CkGui.AttachToolTip("Import all presets to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachTooltip("Import all presets to Loci.--SEP----COL--Must hold CTRL+SHIFT to execute.--COL--", ImGuiColors.DalamudOrange);
         }
     }
 

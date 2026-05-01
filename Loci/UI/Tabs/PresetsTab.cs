@@ -110,7 +110,7 @@ public class PresetsTab : IDisposable
             preset.ApplyType = newType;
             _data.MarkPresetModified(preset);
         }
-        CkGui.AttachToolTip("The Application Rules for this preset.");
+        CkGui.AttachTooltip("The Application Rules for this preset.");
 
         // Now below this draw out the details of the preset
         ImGui.Separator();
@@ -124,7 +124,7 @@ public class PresetsTab : IDisposable
         DrawStatusArrangement(preset, arranger.InnerRegion.X);
         ImGui.SetCursorPos(pos + new Vector2(arranger.InnerRegion.X - ImUtf8.FrameHeight, 0));
         CkGui.FramedHoverIconText(FAI.QuestionCircle, ImGuiColors.TankBlue.ToUint(), ImGui.GetColorU32(ImGuiCol.TextDisabled));
-        CkGui.AttachToolTip("--COL--Left-Click & Drag--COL-- an icon to rearrange order." +
+        CkGui.AttachTooltip("--COL--Left-Click & Drag--COL-- an icon to rearrange order." +
             "--NL----COL--Right-Click--COL-- a Status to remove it from the list.", ImGuiColors.DalamudOrange);
 
         // Shift down to the bottom, up by one frame height.
@@ -181,7 +181,7 @@ public class PresetsTab : IDisposable
             endX -= ImUtf8.FrameHeight;
             ImGui.SameLine(endX);
             CkGui.FramedHoverIconText(FAI.ExclamationTriangle, CkCol.TriStateCross.Uint());
-            CkGui.AttachToolTip(titleErr.TextValue);
+            CkGui.AttachTooltip(titleErr.TextValue);
         }
 
         // Then Description
@@ -211,7 +211,7 @@ public class PresetsTab : IDisposable
             endX -= ImUtf8.FrameHeight;
             ImGui.SameLine(endX);
             CkGui.FramedHoverIconText(FAI.ExclamationTriangle, CkCol.TriStateCross.Uint());
-            CkGui.AttachToolTip(descErr.TextValue);
+            CkGui.AttachTooltip(descErr.TextValue);
         }
     }
 
@@ -328,7 +328,7 @@ public class PresetsTab : IDisposable
             // Perform without any validation
             if (CkGui.IconTextButton(FAI.Crosshairs, $"Apply to {chara->NameString}", disabled: chara->ObjectKind is not (ObjectKind.Pc or ObjectKind.Companion)))
                 sm.ApplyPreset(preset, ManagerChangeType.ApplyRemove);
-            CkGui.AttachToolTip($"Applies the status to the target actor!--SEP----COL--Accepts Players and Minions--COL--", ImGuiColors.DalamudOrange);
+            CkGui.AttachTooltip($"Applies the status to the target actor!--SEP----COL--Accepts Players and Minions--COL--", ImGuiColors.DalamudOrange);
         }
         else
         {
@@ -358,7 +358,7 @@ public class PresetsTab : IDisposable
     private void ColorFormatting()
     {
         CkGui.FramedHoverIconText(FAI.Code, LociCol.Gold.Uint());
-        CkGui.AttachToolTip($"This supports formatting tags." +
+        CkGui.AttachTooltip($"This supports formatting tags." +
             $"--NL----COL--Colors:--COL-- [color=red]...[/color], [color=5]...[/color]" +
             $"--NL----COL--Glow:--COL-- [glow=blue]...[/glow], [glow=7]...[/glow]" +
             $"--NL----COL--Italics:--COL-- [i]...[/i]" +

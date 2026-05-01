@@ -117,14 +117,14 @@ public class LociEventsTab : IDisposable
             sel.Enabled = isSet;
             _data.MarkEventModified(sel);
         }
-        CkGui.AttachToolTip("If this event is being actively monitored");
+        CkGui.AttachTooltip("If this event is being actively monitored");
 
         ImGui.SameLine();
         var priority = sel.Priority;
         ImGui.SetNextItemWidth(80f * ImGuiHelpers.GlobalScale);
         if (ImGui.DragInt("Priority", ref priority, 1.0f, 0, 100, "%d"))
             sel.Priority = priority;
-        CkGui.AttachToolTip("The priority of this event");
+        CkGui.AttachTooltip("The priority of this event");
 
         // Title, description, and event type selection.
         var leftW = ImGui.CalcTextSize("Detect Emotemmm").X;
@@ -349,7 +349,7 @@ public class LociEventsTab : IDisposable
                 sel.JobFlags = 0;
                 _data.MarkEventModified(sel);
             }
-            CkGui.AttachToolTip("When switching to these jobs, this event will trigger.");
+            CkGui.AttachTooltip("When switching to these jobs, this event will trigger.");
         }
     }
 
@@ -428,7 +428,7 @@ public class LociEventsTab : IDisposable
         CkGui.TextFrameAligned("Direction:");
         ImUtf8.SameLineInner();
         CkGui.FramedHoverIconText(FAI.QuestionCircle, ImGuiColors.TankBlue.ToUint(), ImGui.GetColorU32(ImGuiCol.TextDisabled));
-        CkGui.AttachToolTip(
+        CkGui.AttachTooltip(
             "--COL--[Self]:--COL-- Emote is from you" +
             "--NL----COL--[Self ⇒ Others]:--COL-- You used an emote on someone" +
             "--NL----COL--[Others]:--COL-- Someone else used an emote" +
@@ -466,7 +466,7 @@ public class LociEventsTab : IDisposable
                 sel.WhitelistedName = string.Empty;
                 _data.MarkEventModified(sel);
             }
-            CkGui.AttachToolTip("Defines the --COL--Target--COL----SEP--Leaving this blank allows anyone.", LociCol.Gold.Vec4Ref());
+            CkGui.AttachTooltip("Defines the --COL--Target--COL----SEP--Leaving this blank allows anyone.", LociCol.Gold.Vec4Ref());
         }
     }
 
@@ -512,7 +512,7 @@ public class LociEventsTab : IDisposable
                 sel.IndicatedID = uint.MaxValue;
                 _data.MarkEventModified(sel);
             }
-            CkGui.AttachToolTip("The required territory to match. (Working on polishing this)");
+            CkGui.AttachTooltip("The required territory to match. (Working on polishing this)");
         }
         else
         {
@@ -521,7 +521,7 @@ public class LociEventsTab : IDisposable
                 sel.IntendedUse = newUse;
                 _data.MarkEventModified(sel);
             }
-            CkGui.AttachToolTip("The required Related Content Area to match.");
+            CkGui.AttachTooltip("The required Related Content Area to match.");
         }
     }
 
@@ -542,7 +542,7 @@ public class LociEventsTab : IDisposable
             var image = Svc.Texture.GetFromGameIcon(statusData.IconId).GetWrapOrEmpty();
             ImUtf8.SameLineInner();
             ImGui.Image(image.Handle, new(ImUtf8.FrameHeight));
-            CkGui.AttachToolTip(statusData.Name);
+            CkGui.AttachTooltip(statusData.Name);
         }
 
         ImGui.TableNextColumn();
@@ -584,6 +584,6 @@ public class LociEventsTab : IDisposable
             sel.IndicatedID = (uint)newRace;
             _data.MarkEventModified(sel);
         }
-        CkGui.AttachToolTip("When switching to this race, the event triggers");
+        CkGui.AttachTooltip("When switching to this race, the event triggers");
     }
 }

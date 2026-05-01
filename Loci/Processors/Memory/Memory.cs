@@ -37,7 +37,7 @@ public unsafe partial class LociMemory : IHostedService
         logger.LogInformation("Initializing Memory");
         Svc.Hook.InitializeFromAttributes(this);
         // Hook the function delegate as well.
-        AtkComponentIconText_LoadIconByID = Marshal.GetDelegateForFunctionPointer<AtkComponentIconText_LoadIconByIDDelegate>(Svc.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 8D 45 3D"));
+        AtkComponentIconText_LoadIconByID = Marshal.GetDelegateForFunctionPointer<AtkComponentIconText_LoadIconByIDDelegate>(Svc.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 8D 45 3E"));
         ProcessEmoteHook = Svc.Hook.HookFromSignature<OnEmoteFuncDelegate>("E8 ?? ?? ?? ?? 48 8D 8B ?? ?? ?? ?? 4C 89 74 24", ProcessEmoteDetour);
         ProcessGearsetChangeHook = Svc.Hook.HookFromAddress<GearsetChangedDelegate>((nint)RaptureGearsetModule.MemberFunctionPointers.EquipGearsetInternal, GearsetChangedDetour);
 

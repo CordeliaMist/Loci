@@ -23,7 +23,7 @@ public static class FavStar
             CkGui.FramedIconText(FAI.Star, col);
         else
             CkGui.IconText(FAI.Star, col);
-        CkGui.AttachToolTip((isFavorite ? "Remove" : "Add") + " from Favorites.");
+        CkGui.AttachTooltip((isFavorite ? "Remove" : "Add") + " from Favorites.");
 
         if (hovering && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
         {
@@ -45,7 +45,7 @@ public static class FavStar
             CkGui.FramedIconText(FAI.Star, col);
         else
             CkGui.IconText(FAI.Star, col);
-        CkGui.AttachToolTip((isFavorite ? "Remove" : "Add") + " from Favorites.");
+        CkGui.AttachTooltip((isFavorite ? "Remove" : "Add") + " from Favorites.");
 
         if (hovering && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
         {

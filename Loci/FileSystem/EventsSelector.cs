@@ -52,7 +52,7 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
         using (ImRaii.Disabled(!ImGui.GetIO().KeyShift))
             if (ImGui.Selectable("Delete Event"))
                 _data.DeleteEvent(leaf.Value);
-        CkGui.AttachToolTip("Delete this event." +
+        CkGui.AttachTooltip("Delete this event." +
             "--SEP----COL--Must be holding SHIFT--COL--", ImGuiColors.DalamudOrange);
     }
 
@@ -73,7 +73,7 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
     {
         if (ImGui.Selectable("Clone Event", false))
             _data.CloneEvent(leaf.Value, leaf.Value.Title);
-        CkGui.AttachToolTip("Create a clone of this event");
+        CkGui.AttachTooltip("Create a clone of this event");
     }
 
     private void RenameEvents(LociEventsFS.Leaf leaf)
@@ -90,7 +90,7 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
                 _data.RenameEvent(leaf.Value, prevName);
             ImGui.CloseCurrentPopup();
         }
-        CkGui.AttachToolTip("Enter a new event name..");
+        CkGui.AttachTooltip("Enter a new event name..");
 
         CkRichText.Text(currentName, 6);
     }
@@ -151,12 +151,12 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
                 Log.Warning($"Failed to import events from clipboard: {ex.Message}");
             }
         }
-        CkGui.AttachToolTip("Import a events copied from your clipboard.");
+        CkGui.AttachTooltip("Import a events copied from your clipboard.");
         
         ImGui.SameLine(0, 0);
         if (CkGui.IconButton(FAI.Plus, inPopup: true))
             ImGui.OpenPopup("##NewLociEvent");
-        CkGui.AttachToolTip("Create a new LociEvent");
+        CkGui.AttachTooltip("Create a new LociEvent");
 
         ImGui.SameLine(0, 0);
         DrawFolderButton();

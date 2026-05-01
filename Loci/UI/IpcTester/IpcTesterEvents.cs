@@ -94,15 +94,15 @@ public class IpcTesterEvents : IIpcTesterGroup
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.Times, "Clear Cached Tuple", disabled: !IsSubscribed))
             _lastEventInfo = default;
-        CkGui.AttachToolTip("Clears the cached lociEvent tuple.");
+        CkGui.AttachTooltip("Clears the cached lociEvent tuple.");
 
         ImGui.InputTextWithHint("##lociEvents-actor-name", "Player Name@World...", ref _playerName, 64);
-        CkGui.AttachToolTip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
+        CkGui.AttachTooltip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
 
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.Times, "Clear Cached Tuple List", disabled: !IsSubscribed))
             _allEventInfo = [];
-        CkGui.AttachToolTip("Clears the cached lociEvent tuple list.");
+        CkGui.AttachTooltip("Clears the cached lociEvent tuple list.");
 
         ImGui.InputTextWithHint("##lociEvents-buddy-name", "Pet/Minion/Companion Name...", ref _buddyName, 64);
 
@@ -158,6 +158,6 @@ public class IpcTesterEvents : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(SetEventState.Label, "Set Enable State");
         if (CkGui.SmallIconTextButton(FAI.ToggleOn, "Enable", disabled: !IsSubscribed || !isGuidValid))
             _lastReturnCode = new SetEventState(Svc.PluginInterface).Invoke(_lociEventGuid!.Value, true);
-        CkGui.AttachToolTip("Only sets to on right now");
+        CkGui.AttachTooltip("Only sets to on right now");
     }
 }

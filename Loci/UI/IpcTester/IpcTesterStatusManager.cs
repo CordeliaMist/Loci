@@ -64,7 +64,7 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
         if (ImGui.InputTextWithHint("##sm-chara-addr", "Player Address..", ref _actorAddrString, 16, ImGuiInputTextFlags.CharsHexadecimal))
             _actorAddr = nint.TryParse(_actorAddrString, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var tmp) ? tmp : nint.Zero;
         ImGui.InputTextWithHint("##sm-actor-name", "Player Name@World...", ref _playerName, 64);
-        CkGui.AttachToolTip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
+        CkGui.AttachTooltip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
         ImGui.InputTextWithHint("##sm-buddy-name", "Pet/Minion/Companion Name...", ref _buddyName, 64);
 
         ImGui.InputTextWithHint("##sm-base64", "Manager Base64...", ref _managerBase64, 15000);
@@ -147,19 +147,19 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(SetManagerByPtr.Label, "Set Manager by Ptr");
         if (CkGui.SmallIconTextButton(FAI.Upload, "Set", disabled: !IsSubscribed || _actorAddr == nint.Zero || _managerBase64.Length is 0))
             _lastReturnCode = new SetManagerByPtr(Svc.PluginInterface).Invoke(_actorAddr, _managerBase64);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         IpcTesterUI.DrawIpcRowStart(SetManagerByName.Label, "Set Manager by Name");
         if (CkGui.SmallIconTextButton(FAI.Upload, "Set Player", disabled: !IsSubscribed || _playerName.Length == 0 || _managerBase64.Length is 0))
             _lastReturnCode = new SetManagerByName(Svc.PluginInterface).Invoke(_playerName, _managerBase64);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         if (_buddyName.Length > 0)
         {
             ImUtf8.SameLineInner();
             if (CkGui.SmallIconTextButton(FAI.Upload, "Set Buddy", disabled: !IsSubscribed || _playerName.Length == 0 || _managerBase64.Length is 0))
                 _lastReturnCode = new SetManagerByName(Svc.PluginInterface).Invoke(_playerName, _buddyName, _managerBase64);
-            CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+            CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
         }
 
         // Clear
@@ -170,24 +170,24 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(ClearManagerByPtr.Label, "Clear Manager by Ptr");
         if (CkGui.SmallIconTextButton(FAI.Trash, "Clear", disabled: !IsSubscribed || _actorAddr == nint.Zero))
             _lastReturnCode = new ClearManagerByPtr(Svc.PluginInterface).Invoke(_actorAddr);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         IpcTesterUI.DrawIpcRowStart(ClearManagerByName.Label, "Clear Manager by Name");
         if (CkGui.SmallIconTextButton(FAI.Trash, "Clear Player", disabled: !IsSubscribed || _playerName.Length == 0))
             _lastReturnCode = new ClearManagerByName(Svc.PluginInterface).Invoke(_playerName);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         if (_buddyName.Length > 0)
         {
             ImUtf8.SameLineInner();
             if (CkGui.SmallIconTextButton(FAI.Trash, "Clear Buddy", disabled: !IsSubscribed || _playerName.Length == 0))
                 _lastReturnCode = new ClearManagerByName(Svc.PluginInterface).Invoke(_playerName, _buddyName);
-            CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+            CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
         }
 
         IpcTesterUI.DrawIpcRowStart(ConvertLegacyData.Label, "Convert Legacy ActorSM");
         if (CkGui.SmallIconTextButton(FAI.Sync, "Convert", disabled: !IsSubscribed || _managerBase64.Length is 0))
             _convertedBase64 = new ConvertLegacyData(Svc.PluginInterface).Invoke(_managerBase64);
-        CkGui.AttachToolTip("Primarily for testing purposes!");
+        CkGui.AttachTooltip("Primarily for testing purposes!");
     }
 }

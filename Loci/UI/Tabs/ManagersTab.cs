@@ -115,7 +115,7 @@ public class ManagersTab
             }
             if (CkGui.IconButton(FAI.Minus, disabled: manager.Ephemeral, inPopup: true))
                 manager.Cancel(status.GUID, ManagerChangeType.ApplyRemove);
-            CkGui.AttachToolTip("Remove from manager.");
+            CkGui.AttachTooltip("Remove from manager.");
 
             if (idx > 1 && idx < manager.Statuses.Count)
                 ImGui.Separator();

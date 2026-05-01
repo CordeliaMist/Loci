@@ -101,15 +101,15 @@ public class IpcTesterPresets : IIpcTesterGroup
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.Times, "Clear Cached Tuple", disabled: !IsSubscribed))
             _lastPresetInfo = default;
-        CkGui.AttachToolTip("Clears the cached preset tuple.");
+        CkGui.AttachTooltip("Clears the cached preset tuple.");
 
         ImGui.InputTextWithHint("##presets-actor-name", "Player Name@World...", ref _playerName, 64);
-        CkGui.AttachToolTip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
+        CkGui.AttachTooltip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
 
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.Times, "Clear Cached Tuple List", disabled: !IsSubscribed))
             _allPresetInfo = [];
-        CkGui.AttachToolTip("Clears the cached preset tuple list.");
+        CkGui.AttachTooltip("Clears the cached preset tuple list.");
 
         ImGui.InputTextWithHint("##presets-buddy-name", "Pet/Minion/Companion Name...", ref _buddyName, 64);
 
@@ -159,19 +159,19 @@ public class IpcTesterPresets : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(ApplyPresetByPtr.Label, "Apply by Ptr");
         if (CkGui.SmallIconTextButton(FAI.Plus, "Apply", disabled: !IsSubscribed || _actorAddr == nint.Zero || !isGuidValid))
             _lastReturnCode = new ApplyPresetByPtr(Svc.PluginInterface).Invoke(_presetGuid!.Value, _actorAddr);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         IpcTesterUI.DrawIpcRowStart(ApplyPresetByName.Label, "Apply by Player Name");
         if (CkGui.SmallIconTextButton(FAI.Upload, "Apply to Player", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
             _lastReturnCode = new ApplyPresetByName(Svc.PluginInterface).Invoke(_presetGuid!.Value, _playerName);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         if (_buddyName.Length > 0)
         {
             ImUtf8.SameLineInner();
             if (CkGui.SmallIconTextButton(FAI.Upload, "Apply to Buddy", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
                 _lastReturnCode = new ApplyPresetByName(Svc.PluginInterface).Invoke(_presetGuid!.Value, _playerName, _buddyName);
-            CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+            CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
         }
 
         // Removal
@@ -182,19 +182,19 @@ public class IpcTesterPresets : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(RemovePresetByPtr.Label, "Remove by Ptr");
         if (CkGui.SmallIconTextButton(FAI.Trash, "Remove", disabled: !IsSubscribed || _actorAddr == nint.Zero))
             _lastReturnCode = new RemovePresetByPtr(Svc.PluginInterface).Invoke(_presetGuid!.Value, _actorAddr);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         IpcTesterUI.DrawIpcRowStart(RemovePresetByName.Label, "Remove by Player Name");
         if (CkGui.SmallIconTextButton(FAI.Upload, "Remove from Player", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
             _lastReturnCode = new RemovePresetByName(Svc.PluginInterface).Invoke(_presetGuid!.Value, _playerName);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         if (_buddyName.Length > 0)
         {
             ImUtf8.SameLineInner();
             if (CkGui.SmallIconTextButton(FAI.Upload, "Remove from Buddy", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
                 _lastReturnCode = new RemovePresetByName(Svc.PluginInterface).Invoke(_presetGuid!.Value, _playerName, _buddyName);
-            CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+            CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
         }
     }
 }

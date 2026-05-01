@@ -54,7 +54,7 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
         using (ImRaii.Disabled(!ImGui.GetIO().KeyShift))
             if (ImGui.Selectable("Delete Status"))
                 _data.DeleteStatus(leaf.Value);
-        CkGui.AttachToolTip("Delete this status." +
+        CkGui.AttachTooltip("Delete this status." +
             "--SEP----COL--Must be holding SHIFT--COL--", ImGuiColors.DalamudOrange);
     }
 
@@ -75,7 +75,7 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
     {
         if (ImGui.Selectable("Clone Status", false))
             _data.CloneStatus(leaf.Value, leaf.Value.Title);
-        CkGui.AttachToolTip("Create a clone of this status");
+        CkGui.AttachTooltip("Create a clone of this status");
     }
 
     private void RenameStatus(StatusesFS.Leaf leaf)
@@ -92,7 +92,7 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
                 _data.RenameStatus(leaf.Value, currentName);
             ImGui.CloseCurrentPopup();
         }
-        CkGui.AttachToolTip("Enter a new status name..");
+        CkGui.AttachTooltip("Enter a new status name..");
 
         CkRichText.Text(currentName, 6);
     }
@@ -162,12 +162,12 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
                 Log.Warning($"Failed to import status from clipboard: {ex.Message}");
             }
         }
-        CkGui.AttachToolTip("Import a status copied from your clipboard.");
+        CkGui.AttachTooltip("Import a status copied from your clipboard.");
         
         ImGui.SameLine(0, 0);
         if (CkGui.IconButton(FAI.Plus, inPopup: true))
             ImGui.OpenPopup("##NewLociStatus");
-        CkGui.AttachToolTip("Create a new LociStatus");
+        CkGui.AttachTooltip("Create a new LociStatus");
 
         ImGui.SameLine(0, 0);
         DrawFolderButton();

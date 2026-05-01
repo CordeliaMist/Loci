@@ -100,12 +100,12 @@ public class IpcTesterUI : WindowMediatorSubscriberBase
         // Mid Section
         if (CkGui.IconTextButton(FAI.Plug, "Subscribe to IPC", disabled: _subscribed))
             SubscribeToIpc();
-        CkGui.AttachToolTip("THIS IS FOR TESTING PURPOSES ONLY IN THE IPC TESTER TAB." +
+        CkGui.AttachTooltip("THIS IS FOR TESTING PURPOSES ONLY IN THE IPC TESTER TAB." +
             "--SEP--LociIpc is already currently active and running!");
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.PowerOff, "Unsubscribe from IPC", disabled: !_subscribed))
             UnsubscribeFromIpc();
-        CkGui.AttachToolTip("THIS IS FOR TESTING PURPOSES ONLY IN THE IPC TESTER TAB." +
+        CkGui.AttachTooltip("THIS IS FOR TESTING PURPOSES ONLY IN THE IPC TESTER TAB." +
             "--SEP--LociIpc is already currently active and running!");
 
         ImGui.Separator();

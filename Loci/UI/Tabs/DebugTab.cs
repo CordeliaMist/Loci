@@ -21,7 +21,7 @@ public class DebugTab
     {
         ("Essential", [ LoggerType.Mediator, LoggerType.Framework, LoggerType.Objects]),
         ("Processing", [ LoggerType.Memory, LoggerType.Processors, LoggerType.Updates, LoggerType.SheVfx ]),
-        ("Data", [ LoggerType.Data, LoggerType.DataManagement ]),
+        ("Data", [ LoggerType.Data, LoggerType.DataManagement, LoggerType.Events ]),
         ("Ipc", [ LoggerType.IpcProvider, LoggerType.Ipc ]),
     };
 
@@ -184,12 +184,12 @@ public class DebugTab
         {
             ImGui.TableNextColumn();
             CkGui.HoverIconText(FAI.InfoCircle, ImGuiColors.TankBlue.ToUint());
-            CkGui.AttachToolTip(status.ID);
+            CkGui.AttachTooltip(status.ID);
             ImGui.TableNextColumn();
             if (LociIcon.TryGetGameIcon((uint)status.IconID, false, out var wrap))
             {
                 ImGui.Image(wrap.Handle, LociIcon.SizeFramed);
-                CkGui.AttachToolTip($"{status.IconID}");
+                CkGui.AttachTooltip($"{status.IconID}");
             }
             else
                 ImGui.Text($"{status.IconID}");

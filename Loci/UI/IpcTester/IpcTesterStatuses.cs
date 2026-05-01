@@ -112,15 +112,15 @@ public class IpcTesterStatuses : IIpcTesterGroup
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.Times, "Clear Cached Tuple", disabled: !IsSubscribed))
             _lastStatusInfo = default;
-        CkGui.AttachToolTip("Clears the cached preset tuple.");
+        CkGui.AttachTooltip("Clears the cached preset tuple.");
 
         ImGui.InputTextWithHint("##statuses-actor-name", "Player Name@World...", ref _playerName, 64);
-        CkGui.AttachToolTip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
+        CkGui.AttachTooltip("Make this PlayerName@World when working with players, and PlayerName when with pets.");
 
         ImGui.SameLine();
         if (CkGui.IconTextButton(FAI.Times, "Clear Cached Tuple List", disabled: !IsSubscribed))
             _allStatusInfo = [];
-        CkGui.AttachToolTip("Clears the full list info cache.");
+        CkGui.AttachTooltip("Clears the full list info cache.");
 
         ImGui.InputTextWithHint("##statuses-buddy-name", "Pet/Minion/Companion Name...", ref _buddyName, 64);
 
@@ -189,19 +189,19 @@ public class IpcTesterStatuses : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(ApplyStatusByPtr.Label, "Apply by Ptr");
         if (CkGui.SmallIconTextButton(FAI.Plus, "Apply", disabled: !IsSubscribed || _actorAddr == nint.Zero || !isGuidValid))
             _lastReturnCode = new ApplyStatusByPtr(Svc.PluginInterface).Invoke(_statusGuid!.Value, _actorAddr);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         IpcTesterUI.DrawIpcRowStart(ApplyStatusByName.Label, "Apply by Player Name");
         if (CkGui.SmallIconTextButton(FAI.Upload, "Apply to Player", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
             _lastReturnCode = new ApplyStatusByName(Svc.PluginInterface).Invoke(_statusGuid!.Value, _playerName);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         if (_buddyName.Length > 0)
         {
             ImUtf8.SameLineInner();
             if (CkGui.SmallIconTextButton(FAI.Upload, "Apply to Buddy", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
                 _lastReturnCode = new ApplyStatusByName(Svc.PluginInterface).Invoke(_statusGuid!.Value, _playerName, _buddyName);
-            CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+            CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
         }
 
         // Removal
@@ -212,19 +212,19 @@ public class IpcTesterStatuses : IIpcTesterGroup
         IpcTesterUI.DrawIpcRowStart(RemoveStatusByPtr.Label, "Remove by Ptr");
         if (CkGui.SmallIconTextButton(FAI.Trash, "Remove", disabled: !IsSubscribed || _actorAddr == nint.Zero))
             _lastReturnCode = new RemoveStatusByPtr(Svc.PluginInterface).Invoke(_statusGuid!.Value, _actorAddr);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         IpcTesterUI.DrawIpcRowStart(RemoveStatusByName.Label, "Remove by Player Name");
         if (CkGui.SmallIconTextButton(FAI.Upload, "Remove from Player", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
             _lastReturnCode = new RemoveStatusByName(Svc.PluginInterface).Invoke(_statusGuid!.Value, _playerName);
-        CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+        CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
 
         if (_buddyName.Length > 0)
         {
             ImUtf8.SameLineInner();
             if (CkGui.SmallIconTextButton(FAI.Upload, "Remove from Buddy", disabled: !IsSubscribed || _playerName.Length == 0 || !isGuidValid))
                 _lastReturnCode = new RemoveStatusByName(Svc.PluginInterface).Invoke(_statusGuid!.Value, _playerName, _buddyName);
-            CkGui.AttachToolTip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
+            CkGui.AttachTooltip("--COL--WARNING:--COL----NL--This will desync any actors that are ephemeral! (External plugins)", ImGuiColors.DalamudRed);
         }
 
         // Locking
