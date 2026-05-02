@@ -62,7 +62,7 @@ public unsafe class PartyListProcessor : IDisposable
 
         var storeIndex = 0;
         // _logger.LogTrace($"PartyList found {visibleParty.Count} members!", LoggerType.LociProcessors);
-        // _logger.LogTrace($"Partylist had {visibleParty.Count(m => m != nint.Zero)} valid members", LoggerType.LociProcessors);
+        // _logger.LogTrace($"PartyList had {visibleParty.Count(m => m != nint.Zero)} valid members", LoggerType.LociProcessors);
         foreach (var player in Utils.GetVisibleParty())
         {
             if (player != nint.Zero)
@@ -81,7 +81,7 @@ public unsafe class PartyListProcessor : IDisposable
         _logger.LogTrace($"PartyList Requested update: {string.Join(", ", _numStatuses)}", LoggerType.Processors);
     }
 
-    public void UpdatePartyList(AtkUnitBase* addon, bool hideAll = false)
+    private void UpdatePartyList(AtkUnitBase* addon, bool hideAll = false)
     {
         if (!PlayerData.Available)
             return;
