@@ -94,7 +94,7 @@ public class EventService : DisposableMediatorSubscriberBase
     {
         if (!Svc.ClientState.IsLoggedIn)
             return;
-        Logger.LogTrace($"Zone initialized: {args.ToString()}", LoggerType.Processors);
+        Logger.LogTrace($"Zone initialized: {args}", LoggerType.Processors);
         Logger.LogDebug($"Territory changed to: {args.TerritoryType.RowId} ({PlayerContent.GetTerritoryName((ushort)args.TerritoryType.RowId)})", LoggerType.Processors);
         var prevTerritory = _latestTerritory;
         var prevIntendedUse = _latestIntendedUse;
@@ -112,7 +112,7 @@ public class EventService : DisposableMediatorSubscriberBase
         if (!PlayerData.Available)
             return;
 
-        if (DateTime.Now < _delayedUpdateCheck.AddSeconds(1))
+        if (DateTime.Now > _delayedUpdateCheck.AddSeconds(1))
         {
             Mediator.Publish(new DelayedFrameworkUpdateMessage());
             _delayedUpdateCheck = DateTime.Now;
@@ -137,14 +137,12 @@ public class EventService : DisposableMediatorSubscriberBase
             var curRace = (CharaRace)customize.Race;
             var curSex = (CharaGender)customize.Sex;
 
-            if (curRace != _latestRace)
-            {
-                var prevRace = _latestRace;
-                _latestRace = curRace;
-                OnRaceChange(prevRace, curRace);
-            }
+            if (curRace == _latestRace) return;
+            var prevRace = _latestRace;
+            _latestRace = curRace;
+            OnRaceChange(prevRace, curRace);
         }
-        catch (Exception e)
+        catch (Bagagwa e)
         {
             Logger.LogError($"Error while checking race change: {e}");
         }

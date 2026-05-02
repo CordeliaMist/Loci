@@ -2,19 +2,22 @@
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Loci.Data;
 using LociApi.Enums;
 
 namespace Loci.Processors;
+
 public unsafe class PartyListProcessor : IDisposable
 {
     private readonly ILogger<PartyListProcessor> _logger;
     private readonly MainConfig _config;
     private readonly LociManager _manager;
 
-    private int[] NumStatuses = [0, 0, 0, 0, 0, 0, 0, 0];
+    private readonly int[] _numStatuses = new int[8];
+
+    private const byte PartyNodeOffset = 17;
+
     public PartyListProcessor(ILogger<PartyListProcessor> logger, MainConfig config, LociManager manager)
     {
         _logger = logger;
@@ -39,7 +42,7 @@ public unsafe class PartyListProcessor : IDisposable
             UpdatePartyList(addon, true);
     }
 
-    // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage 
+    // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage
     private void OnAlcPartyListRequestedUpdate(AddonEvent t, AddonArgs args)
         => AddonRequestedUpdate((AtkUnitBase*)args.Addon.Address);
 
@@ -54,31 +57,31 @@ public unsafe class PartyListProcessor : IDisposable
         if (addonBase is null || !AddonHelp.IsAddonReady(addonBase) || !_config.CanLociModifyUI())
             return;
 
-        for (var i = 0; i < NumStatuses.Length; i++)
-            NumStatuses[i] = 0;
+        for (var i = 0; i < _numStatuses.Length; i++)
+            _numStatuses[i] = 0;
 
-        var index = 23;
         var storeIndex = 0;
-        var visibleParty = Utils.GetVisibleParty();
         // _logger.LogTrace($"PartyList found {visibleParty.Count} members!", LoggerType.LociProcessors);
-        // _logger.LogTrace($"Partylist had {visibleParty.Count(m => m != nint.Zero)} valid members", LoggerType.LociProcessors);
-        foreach (nint player in Utils.GetVisibleParty())
+        // _logger.LogTrace($"PartyList had {visibleParty.Count(m => m != nint.Zero)} valid members", LoggerType.LociProcessors);
+        foreach (var player in Utils.GetVisibleParty())
         {
             if (player != nint.Zero)
             {
-                var iconArray = AddonHelp.GetNodeIconArray(addonBase->UldManager.NodeList[index]);
+                var nodeIndex = _numStatuses.Length - 1 - storeIndex + PartyNodeOffset;
+                var iconArray = AddonHelp.GetNodeIconArray(addonBase->UldManager.NodeList[nodeIndex]);
                 foreach (var x in iconArray)
                     if (x->IsVisible())
-                        NumStatuses[storeIndex]++;
+                        _numStatuses[storeIndex]++;
             }
+
             // inc regardless
             storeIndex++;
-            index--;
         }
-        _logger.LogTrace($"PartyList Requested update: {string.Join(", ", NumStatuses)}", LoggerType.Processors);
+
+        _logger.LogTrace($"PartyList Requested update: {string.Join(", ", _numStatuses)}", LoggerType.Processors);
     }
 
-    public void UpdatePartyList(AtkUnitBase* addon, bool hideAll = false)
+    private void UpdatePartyList(AtkUnitBase* addon, bool hideAll = false)
     {
         if (!PlayerData.Available)
             return;
@@ -89,37 +92,31 @@ public unsafe class PartyListProcessor : IDisposable
             return;
 
         // We can update, so update
-        var partyMemberNodeIndex = 23;
-        var party = Utils.GetNodeOrderedVisibleParty();
+        //var partyMemberNodeIndex = 24;
+        var party = Utils.GetVisibleParty();
         // _logger.LogDebug($"PartyMembers:\n - {string.Join("\n - ", party.Select(x => $"{x:X} - {((Character*)x)->GetNameWithWorld()}"))}");
 
         for (var n = 0; n < party.Count; n++)
         {
             var player = party[n];
-            if (player == nint.Zero)
-            {
-                partyMemberNodeIndex--;
-                continue;
-            }
+            if (player == nint.Zero) continue;
 
             // Get the icon node array
-            var iconArray = AddonHelp.GetNodeIconArray(addon->UldManager.NodeList[partyMemberNodeIndex]);
+            var nodeIndex = _numStatuses.Length - 1 - n + PartyNodeOffset;
+            var iconArray = AddonHelp.GetNodeIconArray(addon->UldManager.NodeList[nodeIndex]);
+
             // _logger.LogInformation($"Icon array length for {player} is {iconArray.Length}");
-            for (var i = NumStatuses[n]; i < iconArray.Length; i++)
+            for (var i = _numStatuses[n]; i < iconArray.Length; i++)
             {
                 var c = iconArray[i];
                 if (c->IsVisible()) c->NodeFlags ^= NodeFlags.Visible;
             }
 
             // If we should hide all, simply dec the idx and continue.
-            if (hideAll)
-            {
-                partyMemberNodeIndex--;
-                continue;
-            }
+            if (hideAll) continue;
 
             // Otherwise, update the statuses
-            var curIndex = NumStatuses[n];
+            var curIndex = _numStatuses[n];
             var sm = _manager.GetOrCreateSM((Character*)player);
             // _logger.LogTrace($"Found SM for idx {curIndex}, with iconArray length of {iconArray.Length} with {sm.Statuses.Count} statuses.");
             foreach (var status in sm.Statuses)
@@ -136,8 +133,6 @@ public unsafe class PartyListProcessor : IDisposable
                     curIndex++;
                 }
             }
-            // dec the node index for the next member
-            partyMemberNodeIndex--;
         }
     }
 

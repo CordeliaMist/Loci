@@ -147,6 +147,10 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
     }
 
     private List<(nint CharaAddr, string customPath)> SHECandidates = [];
+    private readonly List<LociStatus> _removed = [];
+    private readonly List<LociStatus> _doChainApply = [];
+
+    //TODO: A few statuses is fast here, but this gets very expensive very quickly.
     private unsafe void OnTick(IFramework _)
     {
         // List of VFX that should be handled by the StatusHitEffect.
@@ -165,13 +169,13 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
         // Only process the managers that need updates to save on performance
         // (Do this later when we can test without impacting everyone by accident)
 
-
         // Iterate through them
         foreach (var (ownerNameWorld, sm) in LociManager.Managers.ToList())
         {
-            var removed = new List<LociStatus>();
-            var doChainApply = new List<LociStatus>();
-
+            // creating a list for every manager every frame is very expensive
+            // clearing one is O(n).
+            _removed.Clear();
+            _doChainApply.Clear();
             foreach (var x in sm.Statuses)
             {
                 if (x.ClickedOff && sm.LockedStatuses.ContainsKey(x.GUID))
@@ -188,16 +192,16 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
                     x.ApplyChain = true;
 
                 // Get the expire time.
-                bool timeExpired = x.ExpiresAt - Utils.Time <= 0;
+                var timeExpired = x.ExpiresAt - Utils.Time <= 0;
 
                 // Process status removal.
                 if (timeExpired || x.ClickedOff)
                 {
                     EnsureRemTextWasShown(sm, x);
-                    removed.Add(x);
+                    _removed.Add(x);
                     if (x is { ClickedOff: true, ChainTrigger: ChainTrigger.ClickedOff })
                     {
-                        doChainApply.Add(x);
+                        _doChainApply.Add(x);
                         x.ApplyChain = true;
                     }
                 }
@@ -206,20 +210,17 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
                     EnsureAddTextWasShown(sm, x);
                 }
                 // Mark the status to apply the chain, then reset the flag.
-                if (x.ApplyChain)
-                {
-                    doChainApply.Add(x);
-                    x.ApplyChain = false;
-                }
+                if (!x.ApplyChain) continue;
+                _doChainApply.Add(x);
+                x.ApplyChain = false;
             }
 
-            HandleSHECandidates();
 
             // Now process the removal of all statuses marked.
             // (This allows for chains to be applied without removing original if desired)
-            if (removed.Count > 0)
+            if (_removed.Count > 0)
             {
-                foreach (var status in removed)
+                foreach (var status in _removed)
                 {
                     sm.Remove(status, ManagerChangeType.ApplyRemove);
                     RemovedThisTick++;
@@ -227,34 +228,30 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
             }
 
             // Handle any status chaining logic.
-            if (doChainApply.Count > 0)
-                foreach (var status in doChainApply)
+            if (_doChainApply.Count > 0)
+                foreach (var status in _doChainApply)
                     HandleChaining(sm, status);
 
-            // Handle any other SHECandidates processing removed and chain applications.
-            if (removed.Count > 0 || doChainApply.Count > 0)
-                HandleSHECandidates();
-
             // if the manager is dirty, we should invoke its event
-            if (sm.NeedInvokeChangeEvent)
+            if (!sm.NeedInvokeChangeEvent) continue;
+            var changes = sm.DirtyChanges;
+            sm.DirtyChanges = ManagerChangeType.NoChange;
+
+            // If the status manager owner exists, we can mark them as modified.
+            if (sm.Owner is null) continue;
+            try
             {
-                var changes = sm.DirtyChanges;
-                sm.DirtyChanges = ManagerChangeType.NoChange;
-                // If the status manager owner exists, we can mark them as modified.
-                if (sm.Owner is not null)
-                {
-                    try
-                    {
-                        Mediator.Publish(new ActorSMChanged((nint)sm.Owner, changes));
-                    }
-                    catch (Bagagwa e)
-                    {
-                        Logger.LogWarning($"Something went wrong on LociSMModified IPCEvent!\n{e.Message}\n" +
-                            $"One of your Plugins may have outdated IPC parameters for this IPCEvent");
-                    }
-                }
+                Mediator.Publish(new ActorSMChanged((nint)sm.Owner, changes));
+            }
+            catch (Bagagwa e)
+            {
+                Logger.LogWarning($"Something went wrong on LociSMModified IPCEvent!\n{e.Message}\n" +
+                    $"One of your Plugins may have outdated IPC parameters for this IPCEvent");
             }
         }
+
+        // this already iterates everything again, only call it once per update.
+        HandleSHECandidates();
 
         // Clear any remaining Cancel Requests not yet processed before iterating SHECandidates
         CancelRequests.Clear();
@@ -265,14 +262,11 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
     {
         foreach (var x in SHECandidates)
         {
-            Character* chara = (Character*)x.CharaAddr;
+            var chara = (Character*)x.CharaAddr;
             if (ShouldSpawnHitEffect(chara, x.customPath))
             {
                 Logger.LogDebug($"StatusHitEffect on: {chara->NameString} / {x.customPath}");
-                if (x.customPath == "kill")
-                    _lociMemory.SpawnSHE("dk04ht_canc0h", x.CharaAddr, x.CharaAddr, -1, char.MinValue, 0, char.MinValue);
-                else
-                    _lociMemory.SpawnSHE(x.customPath, x.CharaAddr, x.CharaAddr, -1, char.MinValue, 0, char.MinValue);
+                _lociMemory.SpawnSHE(x.customPath == "kill" ? "dk04ht_canc0h" : x.customPath, x.CharaAddr, x.CharaAddr);
             }
             else
             {
@@ -295,7 +289,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
 
             if (manager.Owner->CanSpawnVFX())
             {
-                if (!SHECandidates.Any(s => s.CharaAddr == (nint)manager.Owner))
+                if (SHECandidates.All(s => s.CharaAddr != (nint)manager.Owner))
                 {
                     var vfxPath = string.IsNullOrWhiteSpace(status.CustomFXPath) ? GameDataHelp.GetVfxPathByID((uint)status.IconID) : status.CustomFXPath;
                     SHECandidates.Add(((nint)manager.Owner, vfxPath));
