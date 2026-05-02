@@ -82,7 +82,7 @@ public unsafe class FlyPopupTextProcessor : IDisposable
                 .Take(_config.Current.FlyTextLimit)
                 .ToList();
         }
-        
+
         while(_queue.TryDequeue(out var e))
         {
             Character* target = null;
@@ -131,7 +131,7 @@ public unsafe class FlyPopupTextProcessor : IDisposable
             return;
         if (!AddonHelp.TryGetAddonByName<AtkUnitBase>("_PopUpText", out var addon))
             return;
-        
+
         for(var i = 1; i < addon->UldManager.NodeListCount; i++)
         {
             var candidate = addon->UldManager.NodeList[i];
@@ -183,8 +183,8 @@ public unsafe class FlyPopupTextProcessor : IDisposable
             return false;
         if(!c->UldManager.NodeList[2]->IsVisible())
             return false;
-        
-        var text = MemoryHelper.ReadSeString(&c->UldManager.NodeList[1]->GetAsAtkTextNode()->NodeText)?.GetText();
+
+        var text = c->UldManager.NodeList[1]->GetAsAtkTextNode()->NodeText.AsDalamudSeString()?.GetText();
         if(text is null || !text.StartsWith('-') && !text.StartsWith('+'))
             return false;
 

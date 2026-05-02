@@ -289,7 +289,7 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
 
             if (manager.Owner->CanSpawnVFX())
             {
-                if (!SHECandidates.Any(s => s.CharaAddr == (nint)manager.Owner))
+                if (SHECandidates.All(s => s.CharaAddr != (nint)manager.Owner))
                 {
                     var vfxPath = string.IsNullOrWhiteSpace(status.CustomFXPath) ? GameDataHelp.GetVfxPathByID((uint)status.IconID) : status.CustomFXPath;
                     SHECandidates.Add(((nint)manager.Owner, vfxPath));
