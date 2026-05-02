@@ -168,56 +168,30 @@ public static class Utils
     {
         if (Svc.Party.Length < 2)
             return [PlayerData.Address];
-        else
-        {
-            var ret = new List<nint>();
-            // Get the specially ordered party members here.
-            var hud = AgentHUD.Instance();
-            var partyMembers = hud->PartyMembers.ToArray();
-            // Note the first person is always the player
-            var sorted = partyMembers.OrderByDescending(m => (nint)m.Object != nint.Zero).ThenBy(m => m.Index).ToList();
-            // Svc.Logger.Information($"Hud Members: {string.Join(", ", sorted.Select(m => $"{((nint)m.Object):X8} (idx {m.Index})"))}");
-            // Sort them by the index that they appear in.
-            for (var i = 0; i < Math.Min((short)8, hud->PartyMemberCount); i++)
-            {
-                if (sorted[i].Object is null || !sorted[i].Object->IsCharacter())
-                {
-                    ret.Add(nint.Zero);
-                    continue;
-                }
-                // Add in the actor.
-                ret.Add((nint)sorted[i].Object);
-            }
-            return ret;
-        }
-    }
 
-    public unsafe static List<nint> GetNodeOrderedVisibleParty()
-    {
-        if (Svc.Party.Length < 2)
-            return [PlayerData.Address];
-        else
+        var ret = new List<nint>();
+        // Get the specially ordered party members here.
+        var hud = AgentHUD.Instance();
+        var partyMembers = hud->PartyMembers.ToArray();
+        // Note the first person is always the player, the party list will change the placement of nodes to accomodate custom sorting;
+        // instead of changing array position of each entity
+        // Svc.Logger.Information($"Hud Members: {string.Join(", ", sorted.Select(m => $"{((nint)m.Object):X8} (idx {m.Index})"))}");
+
+        // Sort them by the index that they appear in.
+        for (var i = 0; i < Math.Min((short)8, hud->PartyMemberCount); i++)
         {
-            var ret = new List<nint>();
-            // Get the specially ordered party members here.
-            var hud = AgentHUD.Instance();
-            var partyMembers = hud->PartyMembers.ToArray();
-            var sorted = partyMembers.Skip(1).OrderByDescending(m => (nint)m.Object != nint.Zero).ThenBy(m => m.Index).ToList();
-            sorted.Insert(0, partyMembers[0]);
-            // Svc.Logger.Information($"Hud Members: {string.Join(", ", sorted.Select(m => $"{((nint)m.Object):X8} (idx {m.Index})"))}");
-            // Sort them by the index that they appear in.
-            for (var i = 0; i < Math.Min((short)8, hud->PartyMemberCount); i++)
+            if (partyMembers[i].Object is null || !partyMembers[i].Object->IsCharacter())
             {
-                if (sorted[i].Object is null || !sorted[i].Object->IsCharacter())
-                {
-                    ret.Add(nint.Zero);
-                    continue;
-                }
-                // Add in the actor.
-                ret.Add((nint)sorted[i].Object);
+                // unrendered party members still need to fill the array slot,
+                // but we don't want to draw their statuses. Zero out the pointer here.
+                ret.Add(nint.Zero);
+                continue;
             }
-            return ret;
+            // Add in the actor.
+            ret.Add((nint)partyMembers[i].Object);
         }
+
+        return ret;
     }
 
     // We already know the current players via our watcher.

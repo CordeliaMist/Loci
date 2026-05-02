@@ -93,7 +93,7 @@ public unsafe class PartyListProcessor : IDisposable
 
         // We can update, so update
         //var partyMemberNodeIndex = 24;
-        var party = Utils.GetNodeOrderedVisibleParty();
+        var party = Utils.GetVisibleParty();
         // _logger.LogDebug($"PartyMembers:\n - {string.Join("\n - ", party.Select(x => $"{x:X} - {((Character*)x)->GetNameWithWorld()}"))}");
 
         for (var n = 0; n < party.Count; n++)
