@@ -5,8 +5,10 @@ using CkCommons.Raii;
 using CkCommons.RichText;
 using CkCommons.Textures;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
@@ -19,15 +21,16 @@ public class DebugTab
     /// <summary> Displays the Debug section within the settings, where we can set our debug level </summary>
     private static readonly (string Label, LoggerType[] Flags)[] FlagGroups =
     {
-        ("Essential", [ LoggerType.Mediator, LoggerType.Framework, LoggerType.Objects]),
-        ("Processing", [ LoggerType.Memory, LoggerType.Processors, LoggerType.Updates, LoggerType.SheVfx ]),
-        ("Data", [ LoggerType.Data, LoggerType.DataManagement, LoggerType.Events ]),
-        ("Ipc", [ LoggerType.IpcProvider, LoggerType.Ipc ]),
+        ("Essential", [LoggerType.Mediator, LoggerType.Framework, LoggerType.Objects]),
+        ("Processing", [LoggerType.Memory, LoggerType.Processors, LoggerType.Updates, LoggerType.SheVfx]),
+        ("Data", [LoggerType.Data, LoggerType.DataManagement, LoggerType.Events]),
+        ("Ipc", [LoggerType.IpcProvider, LoggerType.Ipc]),
     };
 
     private readonly MainConfig _mainConfig;
     private readonly DDSDebugger _ddsDebug;
     private readonly SMDrawSystem _smDDS;
+
     public DebugTab(MainConfig config, DDSDebugger ddsDebug, SMDrawSystem smDDS)
     {
         _mainConfig = config;
@@ -69,6 +72,7 @@ public class DebugTab
             MainConfig.LoggerFilters = LoggerType.Recommended;
             _mainConfig.Save();
         }
+
         ImGui.SameLine();
         if (ImGui.Button("Disable All Filters"))
         {
@@ -160,6 +164,12 @@ public class DebugTab
             if (statuses)
                 DrawStatuses(name, manager.Statuses);
         }
+
+        using (var vanillaStatuses = ImRaii.TreeNode("Game-Controlled Statuses"))
+        {
+            if (vanillaStatuses)
+                DrawVanillaStatuses(name, manager.OwnerAddress);
+        }
     }
 
     private void DrawStatuses(string id, IEnumerable<LociStatus> statuses)
@@ -213,6 +223,60 @@ public class DebugTab
             ImGui.Text($"{status.ChainedGUID}");
             ImGui.TableNextColumn();
             ImGui.Text(status.ChainTrigger.ToString());
+        }
+    }
+
+    private unsafe void DrawVanillaStatuses(string id, nint charaddr)
+    {
+        var chara = (Character*)charaddr;
+        if (chara == null)
+        {
+            ImGui.Text("Character not rendered, statuses unknown.");
+            return;
+        }
+        if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is not { } statusList)
+        {
+            ImGui.Text("Unknown status list.");
+            return;
+        }
+
+        ImGui.Text($"Game Controlled Status Count: ");
+        CkGui.ColorTextInline($"{statusList.Count(s => s.StatusId != 0)}", ImGuiColors.DalamudYellow);
+        ImGui.SameLine();
+        ImGui.Text(" ...with icons:");
+        CkGui.ColorTextInline($"{statusList.Count(s => s.GameData.Value.Icon != 0)}", ImGuiColors.DalamudYellow);
+        ImGui.Text($"Maximum Statuses: {statusList.Length}");
+
+        using var t = ImRaii.Table($"{id}-VanillaStatusList", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit);
+        if (!t) return;
+
+        ImGui.TableSetupColumn("ID");
+        ImGui.TableSetupColumn("IconID");
+        ImGui.TableSetupColumn("Title");
+        ImGui.TableSetupColumn("Description");
+        ImGui.TableSetupColumn("Type");
+        ImGui.TableHeadersRow();
+
+        foreach (var status in statusList)
+        {
+            ImGui.TableNextColumn();
+            CkGui.HoverIconText(FAI.InfoCircle, ImGuiColors.TankBlue.ToUint());
+            CkGui.AttachTooltip($"{status.StatusId}");
+            ImGui.TableNextColumn();
+            if (LociIcon.TryGetGameIcon(status.GameData.Value.Icon, false, out var wrap))
+            {
+                ImGui.Image(wrap.Handle, LociIcon.SizeFramed);
+                CkGui.AttachTooltip($"{status.GameData.Value.Icon}");
+            }
+            else
+                ImGui.Text($"{status.GameData.Value.Icon}");
+
+            ImGui.TableNextColumn();
+            ImGui.Text(status.GameData.Value.Name.ExtractText());
+            ImGui.TableNextColumn();
+            ImGui.Text(status.GameData.Value.Description.ExtractText());
+            ImGui.TableNextColumn();
+            ImGui.Text($"{status.GameData.Value.StatusCategory}");
         }
     }
 }
