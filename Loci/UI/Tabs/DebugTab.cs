@@ -12,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
+using OtterGui.Extensions;
 using OtterGui.Text;
 
 namespace Loci.Gui;
@@ -247,18 +248,23 @@ public class DebugTab
         CkGui.ColorTextInline($"{statusList.Count(s => s.GameData.Value.Icon != 0)}", ImGuiColors.DalamudYellow);
         ImGui.Text($"Maximum Statuses: {statusList.Length}");
 
-        using var t = ImRaii.Table($"{id}-VanillaStatusList", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit);
+        using var t = ImRaii.Table($"{id}-VanillaStatusList", 8, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit);
         if (!t) return;
 
+        ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.DefaultSort);
         ImGui.TableSetupColumn("ID");
         ImGui.TableSetupColumn("IconID");
         ImGui.TableSetupColumn("Title");
+        ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed);
+        ImGui.TableSetupColumn("Flags");
+        ImGui.TableSetupColumn("Flag2");
         ImGui.TableSetupColumn("Description");
-        ImGui.TableSetupColumn("Type");
         ImGui.TableHeadersRow();
 
-        foreach (var status in statusList)
+        foreach (var (status, index) in statusList.WithIndex())
         {
+            ImGui.TableNextColumn();
+            ImGui.Text($"{index}");
             ImGui.TableNextColumn();
             CkGui.HoverIconText(FAI.InfoCircle, ImGuiColors.TankBlue.ToUint());
             CkGui.AttachTooltip($"{status.StatusId}");
@@ -274,9 +280,13 @@ public class DebugTab
             ImGui.TableNextColumn();
             ImGui.Text(status.GameData.Value.Name.ExtractText());
             ImGui.TableNextColumn();
-            ImGui.Text(status.GameData.Value.Description.ExtractText());
-            ImGui.TableNextColumn();
             ImGui.Text($"{status.GameData.Value.StatusCategory}");
+            ImGui.TableNextColumn();
+            ImGui.Text($"{status.GameData.Value.Flags}");
+            ImGui.TableNextColumn();
+            ImGui.Text($"{status.GameData.Value.Flag2}");
+            ImGui.TableNextColumn();
+            ImGui.Text(status.GameData.Value.Description.ExtractText());
         }
     }
 }
