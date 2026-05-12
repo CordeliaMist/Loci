@@ -58,7 +58,7 @@ public unsafe class StatusProcessor : IDisposable
             return;
 
         // skip processing if addon isn't visible
-        if (!addonBase->IsVisible) return;
+        if (!addonBase->RootNode->IsVisible()) return;
 
         NumStatuses = 0;
         for (var i = 31; i >= 1; i--)
@@ -74,7 +74,7 @@ public unsafe class StatusProcessor : IDisposable
         if (addon is null || !AddonHelp.IsAddonReady(addon))
             return;
 
-        if (!addon->IsVisible) return;
+        if (addon->RootNode->IsVisible()) return;
         // TODO: Where we start and place status here needs to be fixed for single bar mode
         // in Left-Justified, we start counting from 31 regardless of type.
         // in Standard sort, buffs are inset 5 from the end on the left, and debuffs 5 from the end on the right.
