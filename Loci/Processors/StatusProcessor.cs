@@ -39,7 +39,7 @@ public unsafe class StatusProcessor : IDisposable
             UpdateStatus(addon, LociManager.ClientSM, NumStatuses, true);
     }
 
-    // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage 
+    // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage
     private void OnAlcStatusRequestedUpdate(AddonEvent t, AddonArgs args)
         => AddonRequestedUpdate((AtkUnitBase*)args.Addon.Address);
     private void OnStatusUpdate(AddonEvent type, AddonArgs args)
@@ -54,11 +54,11 @@ public unsafe class StatusProcessor : IDisposable
 
     private void AddonRequestedUpdate(AtkUnitBase* addonBase)
     {
-        if (addonBase is null || !AddonHelp.IsAddonReady(addonBase) || !_config.CanLociModifyUI())
+        if (addonBase is null || !addonBase->IsVisible || !AddonHelp.IsAddonReady(addonBase) || !_config.CanLociModifyUI())
             return;
-        
+
         NumStatuses = 0;
-        for (var i = 25; i >= 1; i--)
+        for (var i = 31; i >= 1; i--)
         {
             var c = addonBase->UldManager.NodeList[i];
             if (c->IsVisible())
@@ -68,7 +68,7 @@ public unsafe class StatusProcessor : IDisposable
 
     public void UpdateStatus(AtkUnitBase* addon, ActorSM manager, int statusCnt, bool hideAll = false)
     {
-        if (addon is null || !AddonHelp.IsAddonReady(addon))
+        if (addon is null || !addon->IsVisible || !AddonHelp.IsAddonReady(addon))
             return;
 
         int baseCnt = 25 - statusCnt;
