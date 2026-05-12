@@ -11,7 +11,9 @@ public unsafe class StatusProcessor : IDisposable
     private readonly ILogger<StatusProcessor> _logger;
     private readonly MainConfig _config;
 
-    public int NumStatuses = 0;
+    private int _numStatuses;
+    private int _firstStatusIdx;
+
 
     public StatusProcessor(ILogger<StatusProcessor> logger, MainConfig config)
     {
@@ -36,7 +38,7 @@ public unsafe class StatusProcessor : IDisposable
             return;
 
         if(AddonHelp.TryGetAddonByName<AtkUnitBase>("_Status", out var addon) && AddonHelp.IsAddonReady(addon))
-            UpdateStatus(addon, LociManager.ClientSM, NumStatuses, true);
+            UpdateStatus(addon, LociManager.ClientSM, _numStatuses, true);
     }
 
     // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage
@@ -49,7 +51,7 @@ public unsafe class StatusProcessor : IDisposable
         if(!_config.CanLociModifyUI())
             return;
 
-        UpdateStatus((AtkUnitBase*)args.Addon.Address, LociManager.ClientSM, NumStatuses);
+        UpdateStatus((AtkUnitBase*)args.Addon.Address, LociManager.ClientSM, _numStatuses);
     }
 
     private void AddonRequestedUpdate(AtkUnitBase* addonBase)
@@ -58,14 +60,18 @@ public unsafe class StatusProcessor : IDisposable
             return;
 
         // skip processing if addon isn't visible
-        if (!addonBase->RootNode->IsVisible()) return;
+        //if (!addonBase->RootNode->IsVisible()) return;
 
-        NumStatuses = 0;
+        // reset our offset values
+        _numStatuses = 0;
+        _firstStatusIdx = 0;
+
         for (var i = 31; i >= 1; i--)
         {
             var c = addonBase->UldManager.NodeList[i];
-            if (c->IsVisible())
-                NumStatuses++;
+            if (!c->IsVisible()) continue;
+            _numStatuses++;
+            if (_firstStatusIdx == 0) _firstStatusIdx = i;
         }
     }
 
@@ -74,12 +80,12 @@ public unsafe class StatusProcessor : IDisposable
         if (addon is null || !AddonHelp.IsAddonReady(addon))
             return;
 
-        if (addon->RootNode->IsVisible()) return;
+        //if (!addon->RootNode->IsVisible()) return;
         // TODO: Where we start and place status here needs to be fixed for single bar mode
         // in Left-Justified, we start counting from 31 regardless of type.
         // in Standard sort, buffs are inset 5 from the end on the left, and debuffs 5 from the end on the right.
         //   buffs grow left, debuffs grow right.
-        int baseCnt = 25 - statusCnt;
+        int baseCnt = _firstStatusIdx - statusCnt;
 
         // Update visibility
         for (var i = baseCnt; i >= 1; i--)
