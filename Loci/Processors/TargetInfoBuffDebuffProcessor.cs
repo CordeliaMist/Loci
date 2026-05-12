@@ -1,12 +1,13 @@
 ﻿using CkCommons;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Statuses;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Loci.Data;
+using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 
 namespace Loci.Processors;
 public unsafe class TargetInfoBuffDebuffProcessor
@@ -84,7 +85,7 @@ public unsafe class TargetInfoBuffDebuffProcessor
 
             var chara = (Character*)target;
             if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is { } statusList)
-                NumVanillaStatuses = statusList.Count(s => s.GameData.Value.Icon != 0);
+                NumVanillaStatuses = statusList.Count(s => s.GameData.Value.Icon != 0 || s.GameData.Value.Flags != 47); // 47 presumably means don't show
         }
         else
         {

@@ -87,7 +87,7 @@ public unsafe class TargetInfoProcessor
 
             var chara = (Character*)target;
             if (StatusList.CreateStatusListReference((nint)chara->GetStatusManager()) is { } statusList)
-                NumVanillaStatuses = statusList.Count(s => s.GameData.Value.Icon != 0);
+                NumVanillaStatuses = statusList.Count(s => s.GameData.Value.Icon != 0 || s.GameData.Value.Flags != 47);
         }
         else
         {
