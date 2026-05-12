@@ -54,8 +54,11 @@ public unsafe class StatusProcessor : IDisposable
 
     private void AddonRequestedUpdate(AtkUnitBase* addonBase)
     {
-        if (addonBase is null || !addonBase->IsVisible || !AddonHelp.IsAddonReady(addonBase) || !_config.CanLociModifyUI())
+        if (addonBase is null || !AddonHelp.IsAddonReady(addonBase) || !_config.CanLociModifyUI())
             return;
+
+        // skip processing if addon isn't visible
+        if (!addonBase->IsVisible) return;
 
         NumStatuses = 0;
         for (var i = 31; i >= 1; i--)
@@ -68,9 +71,14 @@ public unsafe class StatusProcessor : IDisposable
 
     public void UpdateStatus(AtkUnitBase* addon, ActorSM manager, int statusCnt, bool hideAll = false)
     {
-        if (addon is null || !addon->IsVisible || !AddonHelp.IsAddonReady(addon))
+        if (addon is null || !AddonHelp.IsAddonReady(addon))
             return;
 
+        if (!addon->IsVisible) return;
+        // TODO: Where we start and place status here needs to be fixed for single bar mode
+        // in Left-Justified, we start counting from 31 regardless of type.
+        // in Standard sort, buffs are inset 5 from the end on the left, and debuffs 5 from the end on the right.
+        //   buffs grow left, debuffs grow right.
         int baseCnt = 25 - statusCnt;
 
         // Update visibility
