@@ -58,6 +58,9 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
     public List<LociStatusInfo> GetManagerInfoByPtr(nint ptr)
         => LociManager.Rendered.TryGetValue(ptr, out var actorSM) ? actorSM.GetStatusInfoList() : [];
 
+    public List<(Guid GUID, long ExpiresAtMs)> GetStatusExpiresAtByPtr(nint ptr)
+        => LociManager.Rendered.TryGetValue(ptr, out var actorSM) ? actorSM.GetStatusExpiryList() : [];
+
     public List<LociStatusInfo> GetManagerInfoByName(string charaName, string buddyName)
     {
         var name = _helpers.ToLociName(charaName, buddyName);
