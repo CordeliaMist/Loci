@@ -342,6 +342,18 @@ public class ActorSM
         => Statuses.Count is not 0 ? Statuses.Select(x => x.ToTuple()).ToList() : [];
 
     /// <summary>
+    ///     Gets the live ExpiresAt (Unix ms) per active status, or -1 if permanent. Unlike ToTuple()'s ExpireTicks
+    ///     (which reflects a status's configured Days/Hours/Minutes/Seconds -- not part of the synced data for
+    ///     Ephemeral managers, so it always reads as 0 for remote statuses), ExpiresAt is a normal serialized field
+    ///     and is already what every remote sync path here compares against Utils.Time, so it's valid for both
+    ///     the local and any Ephemeral manager.
+    /// </summary>
+    public List<(Guid GUID, long ExpiresAtMs)> GetStatusExpiryList()
+        => Statuses.Count is not 0
+            ? Statuses.Select(x => (x.GUID, x.ExpiresAt == long.MaxValue ? -1L : x.ExpiresAt)).ToList()
+            : [];
+    
+    /// <summary>
     ///     Apply a MemoryPackSerialized byte array of data to the StatusManager.
     /// </summary>
     public void Apply(byte[] data)
