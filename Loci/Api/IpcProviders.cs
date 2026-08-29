@@ -44,6 +44,7 @@ public class IpcProviders : IDisposable
             GetManagerInfo.Provider(Svc.PluginInterface, api.StatusManager),
             GetManagerInfoByPtr.Provider(Svc.PluginInterface, api.StatusManager),
             GetManagerInfoByName.Provider(Svc.PluginInterface, api.StatusManager),
+            GetStatusExpiresAtByPtr.Provider(Svc.PluginInterface, api.StatusManager),
             SetManager.Provider(Svc.PluginInterface, api.StatusManager),
             SetManagerByPtr.Provider(Svc.PluginInterface, api.StatusManager),
             SetManagerByName.Provider(Svc.PluginInterface, api.StatusManager),
