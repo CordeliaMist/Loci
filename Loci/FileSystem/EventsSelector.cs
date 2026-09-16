@@ -92,7 +92,7 @@ public sealed class EventsSelector : CkFileSystemSelector<LociEvent, EventsSelec
         }
         CkGui.AttachTooltip("Enter a new event name..");
 
-        CkRichText.Text(currentName, 6);
+        NewRichText.TextWrapped(currentName, "events");
     }
 
     public override void Dispose()

@@ -109,7 +109,7 @@ public class ManagersTab
             {
                 var adjust = (rowSize.Y - ImUtf8.TextHeight) * 0.5f;
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + adjust);
-                CkRichText.Text(status.Title, 10);
+                NewRichText.TextWrapped(status.Title, "statuses");
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() - adjust);
                 ImGui.SameLine(ImGui.GetContentRegionAvail().X - CkGui.IconButtonSize(FAI.TimesCircle).X);
             }

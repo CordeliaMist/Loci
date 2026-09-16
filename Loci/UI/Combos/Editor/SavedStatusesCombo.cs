@@ -70,7 +70,7 @@ public sealed class SavedStatusesCombo : CkFilterComboCache<LociStatus>
         ImGui.SameLine(ImUtf8.ItemInnerSpacing.X);
         var adjust = (size.Y - ImUtf8.TextHeight) * 0.5f;
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + adjust);
-        CkRichText.Text(titleSpace, myStatus.Title);
+        NewRichText.TextWrapped(myStatus.Title, titleSpace);
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() - adjust);
         return ret;
     }

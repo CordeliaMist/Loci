@@ -104,7 +104,8 @@ public class MainConfig : IHybridSavable
     [JsonIgnore] public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
     [JsonIgnore] public HybridSaveType SaveType => HybridSaveType.Json;
     public int ConfigVersion => 0;
-    public string GetFileName(FileProvider files, out bool upa) => (upa = false, files.MainConfig).Item2;
+    public int MaxBackups => 2;
+    public string ToFilePath(FileProvider files) => files.MainConfig;
     public void WriteToStream(StreamWriter writer) => throw new NotImplementedException();
     public string JsonSerialize()
     {

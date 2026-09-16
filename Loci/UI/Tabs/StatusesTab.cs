@@ -116,12 +116,12 @@ public class StatusesTab : IDisposable
         if (status.IconID != 0)
         {
             ImGui.SetCursorPos(minPos + new Vector2(_.InnerRegion.X - LociIcon.Size.X * 2.5f, 0));
-            LociIcon.Draw((uint)status.IconID, status.Stacks, LociIcon.Size * 2);
+            LociIcon.Draw(status.IconID, status.Stacks, LociIcon.Size * 2);
             if (ImGui.IsItemHovered(ImGuiHoveredFlags.RectOnly))
             {
                 using (ImRaii.Tooltip())
                 {
-                    CkRichText.Text(200f, status.Description, 2);
+                    NewRichText.TextWrapped(status.Description, 200f, "tooltip");
                 }
             }
         }

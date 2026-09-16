@@ -67,7 +67,7 @@ public sealed class LociEventsFS : CkFileSystem<LociEvent>, IMediatorSubscriber,
                 if (oldName != null)
                     Generic.Safe(() => parent = FindOrCreateAllFolders(oldName));
                 // Dupe the leaf
-                CreateDuplicateLeaf(parent, CkRichText.StripDisallowedRichTags(item.Title, 0), item);
+                CreateDuplicateLeaf(parent, NewRichText.StripDisallowedRichTags(item.Title, 0), item);
                 return;
             case FSChangeType.Deleted:
                 {
@@ -90,8 +90,8 @@ public sealed class LociEventsFS : CkFileSystem<LociEvent>, IMediatorSubscriber,
                     if (!FindLeaf(item, out var leaf))
                         return;
 
-                    var old = CkRichText.StripDisallowedRichTags(oldName, 0).FixName();
-                    var newName = CkRichText.StripDisallowedRichTags(item.Title, 0).FixName();
+                    var old = NewRichText.StripDisallowedRichTags(oldName, 0).FixName();
+                    var newName = NewRichText.StripDisallowedRichTags(item.Title, 0).FixName();
                     // Only auto-rename if the leafs path name was the same as the old name. If it was custom, ignore it.
                     if (old == leaf.Name || leaf.Name.IsDuplicateName(out var baseName, out _) && baseName == old)
                         RenameWithDuplicates(leaf, newName);
@@ -105,7 +105,7 @@ public sealed class LociEventsFS : CkFileSystem<LociEvent>, IMediatorSubscriber,
         => item.ID.ToString();
 
     private static string LociEventToName(LociEvent item)
-        => CkRichText.StripDisallowedRichTags(item.Title, 0).FixName();
+        => NewRichText.StripDisallowedRichTags(item.Title, 0).FixName();
 
     private static bool LociEventHasDefaultPath(LociEvent item, string fullPath)
     {
@@ -118,14 +118,11 @@ public sealed class LociEventsFS : CkFileSystem<LociEvent>, IMediatorSubscriber,
 
     // HybridSavable
     public int ConfigVersion => 0;
+    public int MaxBackups => 2;
     public HybridSaveType SaveType => HybridSaveType.StreamWrite;
     public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
-    public string GetFileName(FileProvider files, out bool _)
-        => (_ = false, files.CKFS_Events).Item2;
-
-    public string JsonSerialize()
-        => throw new NotImplementedException();
-
+    public string ToFilePath(FileProvider files) => files.CKFS_Events;
+    public string JsonSerialize() => throw new NotImplementedException();
     public void WriteToStream(StreamWriter writer) 
         => SaveToFile(writer, SaveLociEvent, true);
 }

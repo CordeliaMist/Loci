@@ -51,6 +51,7 @@ public class IpcProviders : IDisposable
             ClearManagerByPtr.Provider(Svc.PluginInterface, api.StatusManager),
             ClearManagerByName.Provider(Svc.PluginInterface, api.StatusManager),
             ConvertLegacyData.Provider(Svc.PluginInterface, api.StatusManager),
+            ConvertToLegacyData.Provider(Svc.PluginInterface, api.StatusManager),
 
             ManagerChanged.Provider(Svc.PluginInterface, api.StatusManager),
             ApplyToTargetSent.Provider(Svc.PluginInterface, api.StatusManager),

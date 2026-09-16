@@ -119,7 +119,7 @@ public class SettingsTab
             using (ImRaii.PushColor(ImGuiCol.Button, 0xFFDA8972))
                 if (ImGui.Button("Discord Support", buttonSize))
                     Util.OpenLink("https://discord.gg/QJy4zTqpMD");
-            CkGui.AttachTooltip("Opens the Loci support discord", CkCol.TriStateCross.Vec4Ref());
+            CkGui.AttachTooltip("Opens the Loci support discord", CkCol.TriStateCross.Vec4());
             
             using (ImRaii.PushColor(ImGuiCol.Button, 0xFFD5449D))
                 if (ImGui.Button("GitHub Page", buttonSize))

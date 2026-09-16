@@ -18,8 +18,7 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
     private readonly ILogger<SMDrawSystem> _logger;
     private readonly SaveService _hybridSaver;
 
-    private readonly object _folderUpdateLock = new();
-
+    private readonly Lock _updateLock = new();
     public LociMediator Mediator { get; init; }
 
     public SMDrawSystem(ILogger<SMDrawSystem> logger, LociMediator mediator, SaveService saver)
@@ -32,7 +31,13 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
         LoadData();
 
         // These can possibly occur at the same time and must be accounted for.
-        Mediator.Subscribe<FolderUpdateManagers>(this, _ => { lock (_folderUpdateLock) UpdateFolders(); });
+        Mediator.Subscribe<FolderUpdateManagers>(this, _ => 
+        {
+            lock (_updateLock)
+            {
+                UpdateFolders();
+            }
+        });
 
         // Subscribe to the changes (which is to change very, very soon, with overrides.
         DDSChanged += OnChange;
@@ -101,10 +106,6 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
         if (!FolderMap.ContainsKey(PET_TAG))
             anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PET_TAG, CkCol.TriStateCheck.Uint(),
                 () => [.. source().Where(x => x.ActorKind is ObjectKind.BattleNpc)], GetDefaultSorter()));
-        // Ensure show empty is false
-        SetShowIfEmptyState(PLAYER_TAG, false);
-        SetShowIfEmptyState(MINION_TAG, false);
-        SetShowIfEmptyState(PET_TAG, false);
 
         _logger.LogInformation($"Ensured all folders, total now {FolderMap.Count} folders.");
         return anyChanged;
@@ -123,10 +124,10 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
 
     // HybridSavable
     public int ConfigVersion => 0;
+    public int MaxBackups => 2;
     public HybridSaveType SaveType => HybridSaveType.StreamWrite;
-    public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
-    public string GetFileName(FileProvider files, out bool _)
-        => (_ = false, files.DDS_Managers).Item2;
+    public DateTime LastWriteTimeUTC => DateTime.MinValue;
+    public string ToFilePath(FileProvider files) => files.DDS_Managers;
 
     public string JsonSerialize()
         => throw new NotImplementedException();

@@ -126,6 +126,28 @@ public class ApiHelpers(StatusesFS statusFS, PresetsFS presetFS, LociEventsFS ev
         }
     }
 
+    public string ConvertToLegacyData(string lociBase64Data)
+    {
+        try
+        {
+            // Get the byte data
+            var byteArr = Convert.FromBase64String(lociBase64Data);
+            // Deserialize using memoryPack into the legacy format.
+            var lociSM = MemoryPackSerializer.Deserialize<List<LociStatus>>(byteArr);
+            if (lociSM is null)
+                throw new Bagagwa("Deserialized data was null");
+            // Convert to Loci's Format
+            var newData = lociSM.Select(ConvertToLegacyStatus).ToList();
+            // Serialize that data.
+            return ToBase64(newData);
+        }
+        catch (Bagagwa)
+        {
+            Svc.Logger.Warning("Failed to convert lociData to Legacy");
+            return string.Empty;
+        }
+    }
+
     // Does a Legacy -> Loci Status conversion on a single status.
     public LociStatus ConvertLegacyStatus(MyStatus legacyStatus)
         => new LociStatus
@@ -147,12 +169,37 @@ public class ApiHelpers(StatusesFS statusFS, PresetsFS presetFS, LociEventsFS ev
             Dispeller = legacyStatus.Dispeller
         };
 
+    public MyStatus ConvertToLegacyStatus(LociStatus legacyStatus)
+        => new MyStatus
+        {
+            GUID = legacyStatus.GUID,
+            IconID = (int)legacyStatus.IconID,
+            Title = legacyStatus.Title,
+            Description = legacyStatus.Description,
+            CustomFXPath = legacyStatus.CustomFXPath,
+            ExpiresAt = legacyStatus.ExpiresAt,
+            Type = (int)legacyStatus.Type,
+            Modifiers = legacyStatus.Modifiers,
+            Stacks = legacyStatus.Stacks,
+            StackSteps = legacyStatus.StackSteps,
+            ChainedStatus = legacyStatus.ChainedGUID,
+            ChainTrigger = legacyStatus.ChainTrigger,
+            Applier = legacyStatus.Applier,
+            Dispeller = legacyStatus.Dispeller
+        };
+
     // Perform an ActorSM's BinarySerialize method on a defined list of statuses.
     public byte[] BinarySerialize(List<LociStatus> statuses)
-    => MemoryPackSerializer.Serialize(statuses, Utils.SerializerOptions);
+        => MemoryPackSerializer.Serialize(statuses, Utils.SerializerOptions);
+
+    public byte[] BinarySerialize(List<MyStatus> statuses)
+        => MemoryPackSerializer.Serialize(statuses, Utils.SerializerOptions);
 
     // Converts a given list of LociStatuses into the base64 format used by ActorSMs.
     public string ToBase64(List<LociStatus> statuses)
+        => statuses.Count is not 0 ? Convert.ToBase64String(BinarySerialize(statuses)) : string.Empty;
+
+    public string ToBase64(List<MyStatus> statuses)
         => statuses.Count is not 0 ? Convert.ToBase64String(BinarySerialize(statuses)) : string.Empty;
 }
 

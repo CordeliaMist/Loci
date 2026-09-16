@@ -162,6 +162,9 @@ public class StatusManagerApi : DisposableMediatorSubscriberBase, ILociApiStatus
     public string ConvertLegacyData(string base64Data)
         => _helpers.ConvertLegacyData(base64Data);
 
+    public string ConvertToLegacyData(string base64Data)
+        => _helpers.ConvertToLegacyData(base64Data);
+
     private void OnManagerChanged(nint address, ManagerChangeType changeType)
         => ManagerChanged?.Invoke(address, changeType);
 

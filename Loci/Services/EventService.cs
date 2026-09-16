@@ -127,7 +127,7 @@ public class EventService : DisposableMediatorSubscriberBase
 
         // Check race/sex changes
         var drawObj = PlayerData.Character->DrawObject;
-        if (drawObj == null || drawObj->Object.GetObjectType() != ObjectType.CharacterBase)
+        if (drawObj == null || drawObj->Object.GetObjectType() != FFXIVClientStructs.FFXIV.Client.Graphics.Scene.ObjectType.CharacterBase)
             return;
 
         try

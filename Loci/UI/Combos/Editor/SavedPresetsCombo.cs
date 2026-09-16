@@ -90,7 +90,7 @@ public sealed class SavedPresetsCombo : CkFilterComboCache<LociPreset>
         ImGui.SameLine(ImUtf8.ItemInnerSpacing.X);
         var adjust = (size.Y - ImUtf8.TextHeight) * 0.5f;
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + adjust);
-        CkRichText.Text(titleSpace, myPreset.Title);
+        NewRichText.TextWrapped(myPreset.Title, titleSpace);
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() - adjust);
         return ret;
     }

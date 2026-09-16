@@ -92,7 +92,7 @@ public sealed class PresetSelector : CkFileSystemSelector<LociPreset, PresetSele
         }
         CkGui.AttachTooltip("Enter a new preset name..");
 
-        CkRichText.Text(currentName, 6);
+        NewRichText.TextWrapped(currentName, "preset");
     }
 
     public override void Dispose()

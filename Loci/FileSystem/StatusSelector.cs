@@ -94,7 +94,7 @@ public sealed class StatusSelector : CkFileSystemSelector<LociStatus, StatusSele
         }
         CkGui.AttachTooltip("Enter a new status name..");
 
-        CkRichText.Text(currentName, 6);
+        NewRichText.TextWrapped(currentName, "selector");
     }
 
     public override void Dispose()

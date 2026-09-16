@@ -356,7 +356,7 @@ public class LociEventsTab : IDisposable
     private void DrawBuffDebuffBased(LociEvent sel, float leftW)
     {
         ImGui.Spacing();
-        CkGui.ColorTextCentered("Currently WIP", CkCol.TriStateCross.Vec4Ref());
+        CkGui.ColorTextCentered("Currently WIP", CkCol.TriStateCross.Vec4());
         using var t = ImRaii.Table("##buffdebuff", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchSame);
         if (!t) return;
 
@@ -433,7 +433,7 @@ public class LociEventsTab : IDisposable
             "--NL----COL--[Self ⇒ Others]:--COL-- You used an emote on someone" +
             "--NL----COL--[Others]:--COL-- Someone else used an emote" +
             "--NL----COL--[Others ⇒ Self]:--COL-- Done by someone else, and the target WAS you." +
-            "--NL----COL--[Any]--COL-- Ignores Direction.", LociCol.Gold.Vec4Ref());
+            "--NL----COL--[Any]--COL-- Ignores Direction.", LociCol.Gold.Vec4());
 
         ImGui.TableNextColumn();
         if (CkGuiUtils.EnumCombo("##direction", ImGui.GetContentRegionAvail().X, sel.Direction, out var newVal, _ => _.ToDisplayName(), flags: CFlags.None))
@@ -466,7 +466,7 @@ public class LociEventsTab : IDisposable
                 sel.WhitelistedName = string.Empty;
                 _data.MarkEventModified(sel);
             }
-            CkGui.AttachTooltip("Defines the --COL--Target--COL----SEP--Leaving this blank allows anyone.", LociCol.Gold.Vec4Ref());
+            CkGui.AttachTooltip("Defines the --COL--Target--COL----SEP--Leaving this blank allows anyone.", LociCol.Gold.Vec4());
         }
     }
 
@@ -561,7 +561,7 @@ public class LociEventsTab : IDisposable
     private void DrawTimeBased(LociEvent sel, float leftW)
     {
         ImGui.Spacing();
-        CkGui.ColorTextCentered("WIP...", CkCol.TriStateCross.Vec4Ref());
+        CkGui.ColorTextCentered("WIP...", CkCol.TriStateCross.Vec4());
     }
 
     private void DrawRaceBased(LociEvent sel, float leftW)

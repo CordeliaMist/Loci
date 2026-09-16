@@ -179,7 +179,7 @@ public class IconDataSelector
 
         // If no infos display that nothing matches the conditions.
         if (!infos.Any())
-            CkGui.FontTextCentered("0 Results match your filter conditions.", Fonts.Default150Percent, CkCol.TriStateCross.Vec4Ref());
+            CkGui.FontTextCentered("0 Results match your filter conditions.", Fonts.Default150Percent, CkCol.TriStateCross.Vec4());
 
         // Determine the total columns, and then display the table.
         var cols = Math.Clamp((int)(ImGui.GetWindowSize().X / 200f), 1, 10);

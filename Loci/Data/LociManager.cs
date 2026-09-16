@@ -282,9 +282,10 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
 
     #region HybridSavable
     public int ConfigVersion => 1;
+    public int MaxBackups => 2;
     public HybridSaveType SaveType => HybridSaveType.Json;
     public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
-    public string GetFileName(FileProvider files, out bool _) => (_ = false, files.ManagersConfig).Item2;
+    public string ToFilePath(FileProvider files) => files.ManagersConfig;
     public void WriteToStream(StreamWriter writer) => throw new NotImplementedException();
     public string JsonSerialize()
     {

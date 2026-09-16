@@ -85,9 +85,6 @@ public static class LociColors
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector4 Vec4(this LociCol col) => _vec4[(int)col];
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref Vector4 Vec4Ref(this LociCol col) => ref _vec4[(int)col];
-
     public static uint ToUint(this Vector4 color)
     {
         var r = (byte)(color.X * 255);

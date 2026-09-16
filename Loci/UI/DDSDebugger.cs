@@ -138,8 +138,6 @@ public class DDSDebugger
             ImGui.Text(folder.TotalChildren.ToString());
             ImGui.TableNextColumn();
             CkGui.ColorText(folder.FullPath, ImGuiColors.TankBlue);
-            ImGui.TableNextColumn();
-            ImGui.Text(folder.Flags.ToString());
         }
     }
 }

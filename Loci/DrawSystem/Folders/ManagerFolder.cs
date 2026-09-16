@@ -9,7 +9,7 @@ public sealed class ManagerFolder : DynamicFolder<ActorSM>
     private Func<IReadOnlyList<ActorSM>> _generator;
     public ManagerFolder(DynamicFolderGroup<ActorSM> parent, uint id, FAI icon, string name,
         uint iconColor, Func<IReadOnlyList<ActorSM>> generator)
-        : base(parent, icon, name, id)
+        : base(parent, id, icon, name)
     {
         // Can set stylizations here.
         NameColor = uint.MaxValue;
@@ -22,7 +22,7 @@ public sealed class ManagerFolder : DynamicFolder<ActorSM>
 
     public ManagerFolder(DynamicFolderGroup<ActorSM> parent, uint id, FAI icon, string name,
         uint iconColor, Func<IReadOnlyList<ActorSM>> generator, IReadOnlyList<ISortMethod<DynamicLeaf<ActorSM>>> sortSteps)
-        : base(parent, icon, name, id, new(sortSteps))
+        : base(parent, id, icon, name, sorter: new(sortSteps))
     {
         // Can set stylizations here.
         NameColor = uint.MaxValue;
@@ -34,7 +34,7 @@ public sealed class ManagerFolder : DynamicFolder<ActorSM>
 
     public ManagerFolder(DynamicFolderGroup<ActorSM> parent, uint id, FAI icon, string name,
         uint iconColor, Func<IReadOnlyList<ActorSM>> generator, DynamicSorter<DynamicLeaf<ActorSM>> sorter)
-        : base(parent, icon, name, id, sorter)
+        : base(parent, id, icon, name, sorter: sorter)
     {
         // Can set stylizations here.
         NameColor = uint.MaxValue;

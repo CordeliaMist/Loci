@@ -16,9 +16,10 @@ public class FavoritesConfig : IHybridSavable
     private readonly ILogger<FavoritesConfig> _logger;
     private readonly SaveService _saver;
     public int ConfigVersion => 0;
+    public int MaxBackups => 2;
     public HybridSaveType SaveType => HybridSaveType.StreamWrite;
     public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
-    public string GetFileName(FileProvider ser, out bool upa) => (upa = false, ser.Favorites).Item2;
+    public string ToFilePath(FileProvider ser) => ser.Favorites;
     public string JsonSerialize() => throw new NotImplementedException();
     public FavoritesConfig(ILogger<FavoritesConfig> logger, SaveService saver)
     {

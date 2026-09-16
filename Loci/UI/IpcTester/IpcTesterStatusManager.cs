@@ -189,5 +189,10 @@ public class IpcTesterStatusManagers : IIpcTesterGroup
         if (CkGui.SmallIconTextButton(FAI.Sync, "Convert", disabled: !IsSubscribed || _managerBase64.Length is 0))
             _convertedBase64 = new ConvertLegacyData(Svc.PluginInterface).Invoke(_managerBase64);
         CkGui.AttachTooltip("Primarily for testing purposes!");
+
+        IpcTesterUI.DrawIpcRowStart(ConvertToLegacyData.Label, "Convert to Legacy ActorSM");
+        if (CkGui.SmallIconTextButton(FAI.Sync, "Convert", disabled: !IsSubscribed || _managerBase64.Length is 0))
+            _convertedBase64 = new ConvertToLegacyData(Svc.PluginInterface).Invoke(_managerBase64);
+        CkGui.AttachTooltip("Primarily for testing purposes!");
     }
 }

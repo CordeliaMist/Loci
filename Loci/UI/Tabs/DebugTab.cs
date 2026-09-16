@@ -12,7 +12,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Loci.Data;
 using Loci.DrawSystem;
 using Loci.Services;
-using OtterGui.Extensions;
 using OtterGui.Text;
 
 namespace Loci.Gui;
@@ -206,10 +205,10 @@ public class DebugTab
                 ImGui.Text($"{status.IconID}");
 
             ImGui.TableNextColumn();
-            CkRichText.Text(status.Title, 777);
+            NewRichText.TextWrapped(status.Title, "debug");
             ImGui.TableNextColumn();
             ImGui.Dummy(new(200f, 0));
-            CkRichText.Text(200f, status.Description, 777);
+            NewRichText.TextWrapped(status.Description, "debug");
             ImGui.TableNextColumn();
             ImGui.Text($"{status.CustomFXPath}");
             ImGui.TableNextColumn();

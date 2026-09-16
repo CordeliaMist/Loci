@@ -322,11 +322,11 @@ public static class Utils
         // push the title, converting all color tags into the actual label.
         try
         {
-            CkRichText.Text(item.Title, cloneId: 100);
+            NewRichText.TextWrapped(item.Title, "tooltip");
             if (!item.Description.IsNullOrWhitespace())
             {
                 ImGui.Separator();
-                CkRichText.Text(350f, item.Description);
+                NewRichText.TextWrapped(item.Description, 350f, "tooltip");
             }
         }
         catch (Exception e)
@@ -349,14 +349,14 @@ public static class Utils
                 CkGui.ColorText("Chained Status:", ImGuiColors.ParsedGold);
                 ImGui.SameLine();
                 var status = LociData.Statuses.FirstOrDefault(x => x.GUID == item.ChainedGUID)?.Title ?? "Unknown";
-                CkRichText.Text(status, 100);
+                NewRichText.TextWrapped(status, "tooltip");
             }
             else
             {
                 CkGui.ColorText("Chained Preset:", ImGuiColors.ParsedGold);
                 ImGui.SameLine();
                 var preset = LociData.Presets.FirstOrDefault(x => x.GUID == item.ChainedGUID)?.Title ?? "Unknown";
-                CkRichText.Text(preset, 100);
+                NewRichText.TextWrapped(preset, "tooltip");
             }
         }
     }
@@ -374,13 +374,13 @@ public static class Utils
         using var tt = ImRaii.Tooltip();
 
         // push the title, converting all color tags into the actual label.
-        CkRichText.Text(item.Title, cloneId: 100);
+        NewRichText.TextWrapped(item.Title, "tooltip");
         try
         {
             if (!item.Description.IsNullOrWhitespace())
             {
                 ImGui.Separator();
-                CkRichText.Text(350f, item.Description);
+                NewRichText.TextWrapped(item.Description, 350f, "tooltip");
             }
         }
         catch (Exception e)
@@ -404,14 +404,14 @@ public static class Utils
                 CkGui.ColorText("Chained Status:", ImGuiColors.ParsedGold);
                 ImGui.SameLine();
                 var status = statuses.FirstOrDefault(x => x.GUID == item.ChainedGUID).Title ?? "Unknown";
-                CkRichText.Text(status, 100);
+                NewRichText.TextWrapped(status, "tooltip");
             }
             else
             {
                 CkGui.ColorText("Chained Preset:", ImGuiColors.ParsedGold);
                 ImGui.SameLine();
                 var preset = presets.FirstOrDefault(x => x.GUID == item.ChainedGUID).Title ?? "Unknown";
-                CkRichText.Text(preset, 100);
+                NewRichText.TextWrapped(preset, "tooltip");
             }
         }
     }
@@ -464,7 +464,7 @@ public static class Utils
         hadError = false;
         try
         {
-            var parts = CkRichText.RichTextRegex().Split(text);
+            var parts = NewRichText.RichTextRegex().Split(text);
             var str = new SeStringBuilder();
             int[] openTags = new int[3]; // 0=color, 1=glow, 2=italics
             foreach (var s in parts)

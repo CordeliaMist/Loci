@@ -321,9 +321,10 @@ public sealed class LociData : IHybridSavable
 
     #region HybridSavable
     public int ConfigVersion => 1;
+    public int MaxBackups => 2;
     public HybridSaveType SaveType => HybridSaveType.Json;
     public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
-    public string GetFileName(FileProvider files, out bool _) => (_ = false, files.DataConfig).Item2;
+    public string ToFilePath(FileProvider ser) => ser.DataConfig;
     public void WriteToStream(StreamWriter writer) => throw new NotImplementedException();
     public string JsonSerialize()
     {

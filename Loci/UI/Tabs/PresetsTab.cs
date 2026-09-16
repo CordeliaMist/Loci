@@ -17,7 +17,6 @@ using Loci.DrawSystem;
 using Loci.Services;
 using Loci.Services.Mediator;
 using LociApi.Enums;
-using OtterGui.Extensions;
 using OtterGui.Text;
 
 namespace Loci.Gui;
@@ -247,7 +246,7 @@ public class PresetsTab : IDisposable
         var pos = ImGui.GetCursorPos();
         if (_draggedStatus == status.GUID)
         {
-            var green = CkCol.TriStateCheck.Vec4Ref();
+            var green = CkCol.TriStateCheck.Vec4();
             var color = Gradient.Get(green, green with { W = green.W / 4 }, 500).ToUint();
             ImGui.TableSetBgColor(ImGuiTableBgTarget.CellBg, color);
         }

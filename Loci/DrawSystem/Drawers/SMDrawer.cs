@@ -73,7 +73,7 @@ public sealed class SMDrawer : DynamicDrawer<ActorSM>
     private void DrawFolderInner(ManagerFolder folder, Vector2 region, DynamicFlags flags)
     {
         var pos = ImGui.GetCursorPos();
-        CkGui.FramedIconText(folder.IsOpen ? FAI.CaretDown : FAI.CaretRight);
+        CkGui.FramedIconText(folder.Expanded ? FAI.CaretDown : FAI.CaretRight);
         CkGui.ColorTextFrameAlignedInline(folder.Name, folder.NameColor);
         CkGui.ColorTextFrameAlignedInline($"[{folder.TotalChildren}]", ImGuiColors.DalamudGrey2);
         CkGui.AttachTooltip(folder.BracketTooltip);
