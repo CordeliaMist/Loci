@@ -44,6 +44,7 @@ public unsafe class StatusProcessor : IDisposable
     // Func helper to get around 7.4's internal AddonArgs while removing ArtificialAddonArgs usage
     private void OnAlcStatusRequestedUpdate(AddonEvent t, AddonArgs args)
         => AddonRequestedUpdate((AtkUnitBase*)args.Addon.Address);
+    
     private void OnStatusUpdate(AddonEvent type, AddonArgs args)
     {
         if(!PlayerData.Available)
@@ -58,10 +59,7 @@ public unsafe class StatusProcessor : IDisposable
     {
         if (addonBase is null || !AddonHelp.IsAddonReady(addonBase) || !_config.CanLociModifyUI())
             return;
-
-        // skip processing if addon isn't visible
-        //if (!addonBase->RootNode->IsVisible()) return;
-
+        
         // reset our offset values
         _numStatuses = 0;
         _firstStatusIdx = 0;
@@ -69,7 +67,7 @@ public unsafe class StatusProcessor : IDisposable
         for (var i = 31; i >= 1; i--)
         {
             var c = addonBase->UldManager.NodeList[i];
-            if (!c->IsVisible()) continue;
+            if (c is not null && !c->IsVisible()) continue; //this is no longer valid and crashes the game
             _numStatuses++;
             if (_firstStatusIdx == 0) _firstStatusIdx = i;
         }
@@ -79,8 +77,7 @@ public unsafe class StatusProcessor : IDisposable
     {
         if (addon is null || !AddonHelp.IsAddonReady(addon))
             return;
-
-        //if (!addon->RootNode->IsVisible()) return;
+        
         // TODO: Where we start and place status here needs to be fixed for single bar mode
         // in Left-Justified, we start counting from 31 regardless of type.
         // in Standard sort, buffs are inset 5 from the end on the left, and debuffs 5 from the end on the right.
