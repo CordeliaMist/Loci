@@ -64,10 +64,12 @@ public unsafe class StatusProcessor : IDisposable
         _numStatuses = 0;
         _firstStatusIdx = 0;
 
-        for (var i = 31; i >= 1; i--)
+        var nodeList = addonBase->UldManager.NodeList;
+        var size = addonBase->UldManager.NodeListCount;
+
+        for (var i = size; i >= 1; i--) //skip root node, so end at 1
         {
-            var c = addonBase->UldManager.NodeList[i];
-            if (c is not null && !c->IsVisible()) continue; //this is no longer valid and crashes the game
+            if (nodeList[i] is null || !nodeList[i]->IsVisible()) continue; // this crashes the game in *normal* sorting only.
             _numStatuses++;
             if (_firstStatusIdx == 0) _firstStatusIdx = i;
         }
