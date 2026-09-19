@@ -63,20 +63,11 @@ public unsafe class StatusProcessor : IDisposable
         // reset our offset values
         _numStatuses = 0;
         _firstStatusIdx = 0;
-
-        // Nodelist counts backwards, and has a length of 31.
-        // Nodes are read from 30 to 1, displayed left to right.
-        // The length includes the root node ref, so the actual node size is 30.
+        
         var nodeList = addonBase->UldManager.NodeList;
-        var dispCapacity = addonBase->UldManager.NodeListCount - 1;
-
-        // The Game typically only displayed 25 down to 1, leaving the first 5 slots empty.
-        // However, if assigned enough statuses by the base game, such as in an alliance raid,
-        // these extra 5 slots are occupied, and the node list shifts accordingly to account for this.
-
-        // As such this logic should handle the full range of values to account for such shifts and offsets.
-        // This will likely need further logic in UpdateStatus down the line, but now this should be sufficient to handle all current known cases.
-        for (var i = dispCapacity; i >= 1; i--)
+        var size = addonBase->UldManager.NodeListCount - 1;
+        
+        for (var i = size; i >= 1; i--) //skip root node, so end at 1
         {
             if (!nodeList[i]->IsVisible()) continue;
             _numStatuses++;
@@ -90,9 +81,13 @@ public unsafe class StatusProcessor : IDisposable
             return;
         
         // TODO: Where we start and place status here needs to be fixed for single bar mode
-        // in Left-Justified, we start counting from 30 regardless of type.
-        // in Standard sort, buffs are inset 5 from the end on the left, and debuffs 5 from the end on the right.
-        //   buffs grow left, debuffs grow right.
+        // - In each Left-Justified sort, we start counting from 30 regardless of type.
+        // - In Normal sort, buffs are inset 5 from the end on the left, and debuffs 5 from the end on the right.
+        //   When the vanilla buffs start to overflow they are pushed outwards into the empty slots.
+        //   Since we do not have a reliable way to detect this mode and account for it, we just have to go off of
+        //   basic assumptions about the single bar status manager, and some statuses won't be visible.
+        //   This will also likely cause offsets when counting debuffs on the right side of the bar, but without rewriting this
+        //   entire thing we have no way to actually check that.
         int baseCnt = _firstStatusIdx - statusCnt;
 
         // Update visibility
