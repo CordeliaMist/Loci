@@ -63,13 +63,13 @@ public unsafe class StatusProcessor : IDisposable
         // reset our offset values
         _numStatuses = 0;
         _firstStatusIdx = 0;
-
+        
         var nodeList = addonBase->UldManager.NodeList;
-        var size = addonBase->UldManager.NodeListCount;
-
+        var size = addonBase->UldManager.NodeListCount - 1;
+        
         for (var i = size; i >= 1; i--) //skip root node, so end at 1
         {
-            if (nodeList[i] is null || !nodeList[i]->IsVisible()) continue; // this crashes the game in *normal* sorting only.
+            if (!nodeList[i]->IsVisible()) continue;
             _numStatuses++;
             if (_firstStatusIdx == 0) _firstStatusIdx = i;
         }
