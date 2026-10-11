@@ -334,7 +334,7 @@ public class StatusesTab : IDisposable
                 _tmpTimeStr ??= TimeSpan.FromMilliseconds(status.TotalMilliseconds).ToTimeSpanStr();
                 if (CkGui.IconInputText(FAI.HourglassHalf, "Duration", "2h13m6s..", ref _tmpTimeStr, 32, 125f, true))
                 {
-                    if (_tmpTimeStr != TimeSpan.FromMilliseconds(status.TotalMilliseconds).ToTimeSpanStr() && CkTimers.TryParseTimeSpan(_tmpTimeStr, out var newTime))
+                    if (_tmpTimeStr != TimeSpan.FromMilliseconds(status.TotalMilliseconds).ToTimeSpanStr() && RegexEx.TryParseTimeSpan(_tmpTimeStr, out var newTime))
                     {
                         status.Days = newTime.Days;
                         status.Hours = newTime.Hours;
