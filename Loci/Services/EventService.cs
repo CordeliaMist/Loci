@@ -5,6 +5,7 @@ using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using Loci.Data;
 using Loci.Services.Mediator;
 using LociApi.Enums;
@@ -78,6 +79,7 @@ public class EventService : DisposableMediatorSubscriberBase
 
         Logger.LogDebug($"Initial zone: {_latestTerritory} ({PlayerContent.GetTerritoryName(_latestTerritory)}) <{_latestIntendedUse}>", LoggerType.Events);
         Logger.LogDebug($"Initial OnlineStatus: {_latestOnlineStatus}", LoggerType.Events);
+        LoadJobCondition();
         //OnZoneChanged(0, IntendedUseEnum.UNK, _latestTerritory, _latestIntendedUse);
         //OnOnlineStatusChange(0, _latestOnlineStatus);
     }
@@ -88,6 +90,7 @@ public class EventService : DisposableMediatorSubscriberBase
         _latestIntendedUse = IntendedUseEnum.UNK;
         _latestOnlineStatus = 0;
         _latestRace = 0;
+        _lastJobCondition = null;
     }
 
     private async void OnZoneInit(ZoneInitEventArgs args)
@@ -198,6 +201,40 @@ public class EventService : DisposableMediatorSubscriberBase
 
 
     private EventJobCache? _lastJobCondition;
+
+    // Job event statuses persist through reloads, so restore the condition to remove them when leaving the job.
+    private unsafe void LoadJobCondition()
+    {
+        var gearsetIdx = RaptureGearsetModule.Instance()->CurrentGearsetIndex;
+        var jobFlag = (JobFlags)(1UL << (int)PlayerData.JobId);
+        var candidates = LociEventData.Events
+            .Where(e => e.Behavior is EventBehavior.InThatCondition or EventBehavior.InThatConditionAuthorative)
+            .Where(e => IsJobEventFor(e, jobFlag, gearsetIdx))
+            .OrderByDescending(e => e.Priority);
+
+        foreach (var e in candidates)
+        {
+            List<Guid> ids = e.ReactionType is ChainType.Preset
+                ? LociData.Presets.FirstOrDefault(p => p.GUID == e.ReactionGUID)?.Statuses ?? []
+                : [e.ReactionGUID];
+            var active = LociManager.ClientSM.Statuses.Where(s => ids.Contains(s.GUID)).ToList();
+            if (active.Count is 0)
+                continue;
+
+            Logger.LogDebug($"Restored job condition for event: {e.Title} with {active.Count} active statuses.", LoggerType.Events);
+            _lastJobCondition = new EventJobCache(e.GUID, e.GearsetIdx == -1, e.JobFlags, e.GearsetIdx, active);
+            return;
+        }
+    }
+
+    private static bool IsJobEventFor(LociEvent e, JobFlags jobFlag, int gearsetIdx)
+    {
+        if (!e.Enabled || e.EventType is not LociEventType.JobChange)
+            return false;
+        // Job based when no gearset is set, otherwise gearset based.
+        return (e.GearsetIdx == -1) ? e.JobFlags is JobFlags.None || e.JobFlags.Has(jobFlag) : e.GearsetIdx == (short)gearsetIdx;
+    }
+
     private void OnJobGearsetChange(int prevGearsetIdx, byte prevJobId, int newGearsetIdx, byte newJobId)
     {
         // Ignore when the gearset idx didnt change.
@@ -244,16 +281,9 @@ public class EventService : DisposableMediatorSubscriberBase
             }
         }
 
+        // Skip the event already in that condition to prevent looping.
         bool IsValid(LociEvent e)
-        {
-            if (!e.Enabled || e.EventType is not LociEventType.JobChange)
-                return false;
-            // prevent looping
-            if (e.GUID == eventInThatCond)
-                return false;
-            // Ret conditional for gearset/job based
-            return (e.GearsetIdx == -1) ? e.JobFlags is JobFlags.None || e.JobFlags.Has(newJobFlag) : e.GearsetIdx == (short)newGearsetIdx;
-        }
+            => e.GUID != eventInThatCond && IsJobEventFor(e, newJobFlag, newGearsetIdx);
     }
 
     private EventCache? _lastEmoteCondition;
