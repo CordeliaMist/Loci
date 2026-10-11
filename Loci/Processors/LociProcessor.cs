@@ -340,23 +340,28 @@ public class LociProcessor : DisposableMediatorSubscriberBase, IHostedService
 
         // Get old max stacks
         int oldMax = IconStackCounts.TryGetValue(cur.IconID, out var oCount) ? (int)oCount : 1;
-        // Aquire the new chained status to be applied.
+        // Acquire the new chained status to be applied.
         LociStatus? newStatus = manager.AddOrUpdate(status.PreApply(), ManagerChangeType.Chained);
-        // If the new status if not valid just fail this process.
+        // If the new status is not valid just fail this process.
         if (newStatus is null)
             return;
-        // Get the new max stacks, and if stackable, transfer stack logic.
+        // Get the new max stacks, and if both statuses are stackable, transfer stack logic.
         int newMaxStacks = IconStackCounts.TryGetValue(newStatus.IconID, out var nCount) ? (int)nCount : 1;
-        if (newMaxStacks > 1)
+        if (oldMax > 1 && newMaxStacks > 1)
         {
+            // HitSetStacks gets here with stacks already increased, HitMaxStacks gets here before the increase.
+            var (reached, threshold) = cur.ChainTrigger is ChainTrigger.HitSetStacks
+                ? (cur.Stacks, cur.StackToChain)
+                : (cur.Stacks + cur.StackSteps, oldMax);
+
             if (cur.Modifiers.Has(Modifiers.StacksCarryToChain))
             {
-                // Use (oldMax - 1) here because our stacks always start at 1, not 0. So if it has 8 stacks, it can only increment 7 times.
-                var toCarryOver = (cur.Stacks + cur.StackSteps) - (oldMax - 1);
-                newStatus.Stacks = Math.Min(newStatus.Stacks - newStatus.StackSteps + toCarryOver, newMaxStacks);
+                // Use (threshold - 1) because stacks start at 1, not 0. So reaching 8 takes only 7 increments.
+                var toCarryOver = reached - (threshold - 1);
+                newStatus.Stacks = Math.Clamp(newStatus.Stacks - newStatus.StackSteps + toCarryOver, 1, newMaxStacks);
             }
             else if (cur.Modifiers.Has(Modifiers.StacksMoveToChain))
-                newStatus.Stacks = Math.Min(oldMax, newMaxStacks);
+                newStatus.Stacks = Math.Min(threshold, newMaxStacks);
         }
 
         // Fix ensuring cap is hit when the chain trigger is max stacks.

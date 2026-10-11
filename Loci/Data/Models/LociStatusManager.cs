@@ -231,7 +231,7 @@ public class ActorSM
                 else if (cur.ChainTrigger is ChainTrigger.HitSetStacks && curStacks < cur.StackToChain && curStacks + ns.StackSteps >= cur.StackToChain)
                 {
                     ns.ApplyChain = true;
-                    ns.Stacks = curStacks;
+                    ns.Stacks = max;
                 }
             }
             else
