@@ -461,8 +461,8 @@ public class EventService : DisposableMediatorSubscriberBase
                 return LociManager.ClientSM.AddOrUpdate(data.PreApply(), flags) is not null;
 
             case EventBehavior.InThatCondition:
-                if (existing is not null) return true;
-                if (LociManager.ClientSM.AddOrUpdate(data.PreApply(), flags) is not null)
+                // Track an existing status too, so it is still removed when exiting the condition.
+                if (existing is not null || LociManager.ClientSM.AddOrUpdate(data.PreApply(), flags) is not null)
                 {
                     applied.Add(data);
                     return true;
