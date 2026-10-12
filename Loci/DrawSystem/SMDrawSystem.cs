@@ -86,29 +86,33 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
         }
     }
 
+    private object l;
     protected override bool EnsureAllFolders(Dictionary<string, string> _)
     {
-        bool anyChanged = false;
+        lock(l) 
+        {
+            bool anyChanged = false;
 #if DEBUG
-        Func<IEnumerable<ActorSM>> source = () => LociManager.Managers.Values;
+            Func<IEnumerable<ActorSM>> source = () => LociManager.Managers.Values;
 #else
         Func<IEnumerable<ActorSM>> source = () => LociManager.Rendered.Values;
 #endif
-        // Players
-        if (!FolderMap.ContainsKey(PLAYER_TAG))
-            anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PLAYER_TAG, CkCol.TriStateCheck.Uint(),
-                () => [.. source().Where(x => x.ActorKind is ObjectKind.Pc)], GetDefaultSorter()));
-        // Minions
-        if (!FolderMap.ContainsKey(MINION_TAG))
-            anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, MINION_TAG, CkCol.TriStateCheck.Uint(),
-                () => [.. source().Where(x => x.ActorKind is ObjectKind.Companion)], GetDefaultSorter()));
-        // Pets (Not working atm, maybe later?)
-        if (!FolderMap.ContainsKey(PET_TAG))
-            anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PET_TAG, CkCol.TriStateCheck.Uint(),
-                () => [.. source().Where(x => x.ActorKind is ObjectKind.BattleNpc)], GetDefaultSorter()));
+            // Players
+            if (!FolderMap.ContainsKey(PLAYER_TAG))
+                anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PLAYER_TAG, CkCol.TriStateCheck.Uint(),
+                    () => [.. source().Where(x => x.ActorKind is ObjectKind.Pc)], GetDefaultSorter()));
+            // Minions
+            if (!FolderMap.ContainsKey(MINION_TAG))
+                anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, MINION_TAG, CkCol.TriStateCheck.Uint(),
+                    () => [.. source().Where(x => x.ActorKind is ObjectKind.Companion)], GetDefaultSorter()));
+            // Pets (Not working atm, maybe later?)
+            if (!FolderMap.ContainsKey(PET_TAG))
+                anyChanged |= AddFolder(new ManagerFolder(root, idCounter + 1u, FAI.User, PET_TAG, CkCol.TriStateCheck.Uint(),
+                    () => [.. source().Where(x => x.ActorKind is ObjectKind.BattleNpc)], GetDefaultSorter()));
 
-        _logger.LogInformation($"Ensured all folders, total now {FolderMap.Count} folders.");
-        return anyChanged;
+            _logger.LogInformation($"Ensured all folders, total now {FolderMap.Count} folders.");
+            return anyChanged;
+        }
     }
 
     public void UpdateFilters()
