@@ -1,9 +1,7 @@
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using Loci.Data;
 using Loci.Services;
 using LociApi.Api;
 using LociApi.Enums;
-using static FFXIVClientStructs.FFXIV.Client.UI.Info.InfoProxy24.Delegates;
 
 namespace Loci.Api;
 
