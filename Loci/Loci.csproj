@@ -24,8 +24,6 @@
         <ProjectReference Include="..\Submodules\LociAPI\Loci.Api.csproj"/>
         <ProjectReference Include="..\Submodules\OtterGui\OtterGui.csproj"/>
         <!--For SignalR server connectivity, helpful for server connectivity processing-->
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.12"/>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1"/>
 
         <!--For MemoryPacking of Loci data and transfer (And SMA Data possibly)-->
