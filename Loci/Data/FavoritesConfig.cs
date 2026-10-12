@@ -18,7 +18,7 @@ public class FavoritesConfig : IHybridSavable
     public int ConfigVersion => 0;
     public int MaxBackups => 2;
     public HybridSaveType SaveType => HybridSaveType.StreamWrite;
-    public DateTime LastWriteTimeUTC { get; private set; } = DateTime.MinValue;
+    public DateTime LastWriteTimeUTC => DateTime.MinValue;
     public string ToFilePath(FileProvider ser) => ser.Favorites;
     public string JsonSerialize() => throw new NotImplementedException();
     public FavoritesConfig(ILogger<FavoritesConfig> logger, SaveService saver)
@@ -40,23 +40,28 @@ public class FavoritesConfig : IHybridSavable
         if (_saver.Load(this) is not {} jObject)
         {
             _logger.LogWarning($"No Config found at {file}");
+            Statuses.Clear();
+            Presets.Clear();
+            Events.Clear();
+            IconIDs.Clear();
             _saver.Save(this);
             return;
         }
 
         try
         {
-            // Load favorites.
-            // (No Migration Needed yet).
-            Statuses.UnionWith(jObject["Statuses"]!.ToObject<HashSet<Guid>>() ?? []);
-            Presets.UnionWith(jObject["Presets"]!.ToObject<HashSet<Guid>>() ?? []);
-            Events.UnionWith(jObject["Events"]!.ToObject<HashSet<Guid>>()  ?? []);
-            IconIDs.UnionWith(jObject["IconIDs"]!.ToObject<HashSet<uint>>() ?? []);
+            var load = jObject.ToObject<LoadIntermediary>() ?? throw new Exception("Failed to deserialize FavoritesConfig");
+            Statuses.UnionWith(load.Statuses);
+            Presets.UnionWith(load.Presets);
+            Events.UnionWith(load.Events);
+            IconIDs.UnionWith(load.IconIDs);
         }
         catch (Bagagwa e)
         {
             _logger.LogError(e, "Failed to load favorites.");
+            return;
         }
+        _saver.Save(this);
     }
 
     public bool Favorite(StarType type, Guid id)

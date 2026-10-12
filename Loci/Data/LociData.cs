@@ -7,7 +7,7 @@ using LociApi.Enums;
 namespace Loci.Data;
 
 /// <summary>
-///     Holds all data relative to statuses, presets, and events within Loci.
+///   Holds all data relative to statuses, presets, and events within Loci.
 /// </summary>
 public sealed class LociData : IHybridSavable
 {

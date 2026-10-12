@@ -117,8 +117,8 @@ public sealed class LociEventData : IHybridSavable
         _events.Clear();
         if (_saver.Load(this) is not {} jObject)
         {
-            _logger.LogWarning($"No EventsConfig found at {file}");
             // create a new file with default values.
+            _logger.LogWarning($"No EventsConfig found at {file}");
             _saver.Save(this);
             return;
         }
@@ -142,7 +142,7 @@ public sealed class LociEventData : IHybridSavable
     private void LoadV1(JObject jObject)
     {
         // Load in as normal.
-        _events = jObject["Events"]?.ToObject<List<LociEvent>>() ?? new List<LociEvent>();
+        _events = jObject["Events"]?.ToObject<List<LociEvent>>() ?? [];
     }
     #endregion HybridSavable
 }
