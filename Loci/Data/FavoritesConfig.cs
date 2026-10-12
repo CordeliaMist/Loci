@@ -37,7 +37,7 @@ public class FavoritesConfig : IHybridSavable
     {
         var file = _saver.FileNames.Favorites;
         _logger.LogInformation($"Loading Config file: {file}");
-        if (!File.Exists(file))
+        if (_saver.Load(this) is not {} jObject)
         {
             _logger.LogWarning($"No Config found at {file}");
             _saver.Save(this);
@@ -46,15 +46,12 @@ public class FavoritesConfig : IHybridSavable
 
         try
         {
-            var load = JsonConvert.DeserializeObject<LoadIntermediary>(File.ReadAllText(file));
-            if (load is null)
-                throw new Bagagwa("Failed to load favorites.");
             // Load favorites.
             // (No Migration Needed yet).
-            Statuses.UnionWith(load.Statuses);
-            Presets.UnionWith(load.Presets);
-            Events.UnionWith(load.Events);
-            IconIDs.UnionWith(load.IconIDs);
+            Statuses.UnionWith(jObject["Statuses"]!.ToObject<HashSet<Guid>>() ?? []);
+            Presets.UnionWith(jObject["Presets"]!.ToObject<HashSet<Guid>>() ?? []);
+            Events.UnionWith(jObject["Events"]!.ToObject<HashSet<Guid>>()  ?? []);
+            IconIDs.UnionWith(jObject["IconIDs"]!.ToObject<HashSet<uint>>() ?? []);
         }
         catch (Bagagwa e)
         {

@@ -304,17 +304,14 @@ public sealed class LociManager : DisposableMediatorSubscriberBase, IHybridSavab
     {
         var file = _fileNames.ManagersConfig;
         Logger.LogInformation($"Loading Managers Config for: {file}");
-        if (!File.Exists(file))
+        if (_saver.Load(this) is not {} jObject)
         {
             Logger.LogWarning($"No Managers Config found at {file}");
             // create a new file with default values.
             _saver.Save(this);
             return;
         }
-
-        // Read the json from the file.
-        var jsonText = File.ReadAllText(file);
-        var jObject = JObject.Parse(jsonText);
+        
         var version = jObject["Version"]?.Value<int>() ?? 1;
 
         switch (version)

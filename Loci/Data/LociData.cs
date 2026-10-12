@@ -343,7 +343,7 @@ public sealed class LociData : IHybridSavable
         _logger.LogInformation($"Loading DataConfig for: {file}");
         _statuses.Clear();
         _presets.Clear();
-        if (!File.Exists(file))
+        if (_saver.Load(this) is not {} jObject)
         {
             _logger.LogWarning($"No DataConfig found at {file}");
             // create a new file with default values.
@@ -352,8 +352,6 @@ public sealed class LociData : IHybridSavable
         }
 
         // Read the json from the file.
-        var jsonText = File.ReadAllText(file);
-        var jObject = JObject.Parse(jsonText);
         var version = jObject["Version"]?.Value<int>() ?? 1;
 
         switch (version)

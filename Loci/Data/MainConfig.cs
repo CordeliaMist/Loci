@@ -47,18 +47,16 @@ public class MainConfig : IHybridSavable
     {
         var file = _saver.FileNames.MainConfig;
         _logger.LogInformation("Loading in Config for file: " + file);
-        if (!File.Exists(file))
+        if (_saver.Load(this) is not {} jObject)
         {
             _logger.LogWarning("Config file not found for: " + file);
             _saver.Save(this);
             return;
         }
-
-        var jsonText = File.ReadAllText(file);
-        var jObject = JObject.Parse(jsonText);
+        
         var version = jObject["Version"]?.Value<int>() ?? 0;
 
-            // Load instance configuration
+        // Load instance configuration
         Current = jObject["Config"]?.ToObject<ConfigStorage>() ?? new ConfigStorage();
 
         // Load static fields safely
