@@ -86,7 +86,7 @@ public class SMDrawSystem : DynamicDrawSystem<ActorSM>, IMediatorSubscriber, IDi
         }
     }
 
-    private object l;
+    private Lock l = new();
     protected override bool EnsureAllFolders(Dictionary<string, string> _)
     {
         lock(l) 
